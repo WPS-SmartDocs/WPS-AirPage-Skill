@@ -1,0 +1,22 @@
+{
+  "name": "wps-airpage",
+  "version": "0.1.0",
+  "description": "WPS 智能文档 CLI — 通过 Cookie 认证操作 AirPage 块内容",
+  "main": "scripts/index.js",
+  "bin": {
+    "wps-airpage": "scripts/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "commander": "^12.1.0"
+  },
+  "files": ["scripts/", "assets/", "references/", "SKILL.md", "LICENSE"],
+  "keywords": ["wps", "airpage", "kdocs", "skill"],
+  "license": "MIT"
+}
