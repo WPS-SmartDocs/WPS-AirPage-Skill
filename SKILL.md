@@ -53,57 +53,44 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 
 ---
 
-### 方式一：手动提取（无需任何 MCP，始终可用）
+### 方式一：Chrome DevTools MCP（推荐，全自动）
 
-1. 浏览器打开 `https://365.kdocs.cn`，进入任意 AirPage 文档**编辑页**
-2. **按 F12** 打开 DevTools → 切换到 **Network** 标签
-3. 刷新页面或随便点击，找任意对 `365.kdocs.cn` 的请求
-4. 点击该请求 → **Headers** → **Request Headers** → 复制 `cookie:` 字段完整值
-5. 切换到 **Console** 标签，输入：
-   ```javascript
-   window.__WPSENV__.csrf_token
+**如未安装，先执行**（一次性）：
+
+```bash
+claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest
+```
+
+安装后重启 Claude Code 会话，然后：
+
+1. 确认浏览器已打开某个 AirPage 文档**编辑页**（必须是编辑模式）
+2. 用 `mcp__chrome-devtools__get_network_request` 找一个对 `365.kdocs.cn` 的请求，读取 Request Headers 中的 `Cookie` 字段
+3. 用 `mcp__chrome-devtools__evaluate_script` 执行 `() => window.__WPSENV__?.csrf_token` 获取 CSRF
+4. 保存：
+   ```bash
+   node scripts/cli.js auth --set-cookie "<cookie>" --set-csrf "<csrf>"
    ```
-   复制输出的字符串
-6. 保存凭据：
+
+---
+
+### 方式二：手动提取（无需任何 MCP，始终可用）
+
+1. 浏览器打开 AirPage 文档**编辑页**，按 **F12**
+2. **Network 标签** → 找任意对 `365.kdocs.cn` 的请求 → Request Headers → 复制 `cookie:` 完整值
+3. **Console 标签** → 输入 `window.__WPSENV__.csrf_token` → 复制输出
+4. 保存：
    ```bash
    node scripts/cli.js auth --set-cookie "wps_sid=...;..." --set-csrf "GpI+..."
    ```
 
 ---
 
-### 方式二：Chrome DevTools MCP（自动化，推荐）
-
-如果已安装 `chrome-devtools-mcp`：
-
-```javascript
-// Step 1: 从网络请求头获取完整 Cookie（包含 HttpOnly 的 wps_sid）
-// 使用 mcp__chrome-devtools__get_network_request 找一个 kdocs.cn 请求
-// 读取 Request Headers 中的 Cookie 字段
-
-// Step 2: 获取 CSRF（需在编辑器页执行）
-() => window.__WPSENV__?.csrf_token
-// 使用 mcp__chrome-devtools__evaluate_script
-```
-
-**安装 Chrome DevTools MCP（如未安装）**：
-
-```bash
-# 在 Claude Code 中执行：
-claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest
-# 或手动添加到 ~/.claude/settings.json 的 mcpServers 段
-```
-
----
-
 ### 方式三：Playwright MCP（部分自动化）
 
-如果已安装 Playwright MCP 但没有 Chrome DevTools MCP：
+CSRF 可自动提取，Cookie 仍需手动：
 
-- **CSRF** 可通过 `mcp__playwright__browser_evaluate` 获取：
-  ```javascript
-  () => window.__WPSENV__?.csrf_token
-  ```
-- **Cookie（含 HttpOnly）**：Playwright MCP 暂无直接获取全部 cookie 的工具，需配合手动方式（F12 → Network）获取 `wps_sid`
+- CSRF：`mcp__playwright__browser_evaluate` → `() => window.__WPSENV__?.csrf_token`
+- Cookie（含 HttpOnly wps_sid）：需配合方式二的 F12 → Network 步骤手动获取
 
 ---
 
