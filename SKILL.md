@@ -13,99 +13,145 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 ## 工作流
 
 ```
-1. 鉴权   → 读缓存 / Chrome DevTools MCP 提取
-2. 选文档  → $WPS_FILE_ID 或搜索选择
+1. 鉴权   → 读缓存 / Chrome DevTools MCP 提取（见下方详细步骤）
+2. 选文档  → search 获取数字 file_id（非短链！）
 3. 执行操作 → 参考下方命令
 ```
 
-## 命令参考
+## CLI 命令参考
 
-| 命令 | 功能 |
+| 命令 | 示例 |
 |------|------|
-| `auth` | 刷新鉴权凭据（cookie + CSRF） |
-| `search <关键词>` | 搜索文档列表，选择目标文档 |
-| `select <file_id>` | 直接指定文档 ID |
-| `blocks [block_id]` | 查询文档块（默认 root） |
-| `get <block_id>` | 获取指定块详情 |
-| `insert <block_id> <index> <content>` | 在指定位置插入块 |
-| `update <block_id> <content>` | 更新指定块内容 |
-| `delete <block_id>` | 删除指定块 |
-| `batch-delete <id1> <id2> ...` | 批量删除块 |
-| `convert <markdown>` | Markdown → 块数据 |
-| `new-doc` | 创建新 AirPage 文档 |
+| `auth --set-cookie <c> --set-csrf <t>` | 保存凭据到 `~/.claude/secrets/wps365.json` |
+| `auth --refresh` | 打印提取步骤 |
+| `search <关键词>` | 搜索文档，返回数字 file_id |
+| `query <file_id> [block_id]` | 查询块（默认 doc）|
+| `batch-query <file_id> <id1> <id2>` | 批量查询 |
+| `insert <file_id> --block-id <id> --index <n> --content <json>` | 插入块（index >= 1）|
+| `update <file_id> --body <json>` | 更新块 |
+| `delete <file_id> --body <json>` | 删除块 |
+| `convert <file_id> --content <text>` | Markdown → 块数据 |
+| `new-doc --name <名称>` | 创建新 AirPage 文档 |
+| `decode <base64>` | 解码 base64（通常不需要，响应已自动处理）|
 
-## 鉴权模块
+## 鉴权：获取 Cookie 和 CSRF
 
 **凭据文件**: `~/.claude/secrets/wps365.json`
 
 ```json
 {
-  "cookie": "wps_sid=...; ...",
-  "csrf": "xxxxxx",
+  "cookie": "wps_sid=...; kso_sid=...; ...",
+  "csrf": "GpI+ztTX...",
   "updated_at": "2026-03-11T00:00:00Z"
 }
 ```
 
-**获取流程**（`auth` 命令或凭据缺失时）:
+### ⚠️ 关键约束
 
-1. 确认用户已在浏览器打开 `https://365.kdocs.cn`（并打开某个 AirPage 文档以获取 CSRF）
-2. 使用 Chrome DevTools MCP 提取：
-   - Cookie: `mcp__chrome-devtools__evaluate_script` → `document.cookie`
-   - CSRF: `mcp__chrome-devtools__evaluate_script` → `window.__WPSENV__.csrf_token`
-3. 写入 `~/.claude/secrets/wps365.json`
+- `wps_sid` 是 HttpOnly cookie，**`document.cookie` 读不到它**
+- 必须从网络请求 Headers 中提取完整 Cookie
+- CSRF token 只在 AirPage **编辑器页面**存在（非纯阅读/分享页）
 
-**两种凭据用途**:
-- `cookie` only → 文件搜索 API
-- `cookie` + `x-csrf-rand: <csrf>` → 所有块操作 API
+### 快速获取步骤（Chrome DevTools MCP）
 
-详见: `references/auth.md`
+**Step 1 — 获取完整 Cookie（从网络请求头）**
 
-## 文件选择
-
-优先级：
-1. 环境变量 `$WPS_FILE_ID`（`export WPS_FILE_ID=xxxxx`）
-2. 命令行参数 `--file-id <id>`
-3. 执行 `search <关键词>` → 展示列表 → 用户选择
-
-**搜索 API**（仅需 cookie）:
 ```
-GET https://365.kdocs.cn/3rd/drive/api/v6/search/files
-  ?offset=0&count=10&sort_by=create_time&order=desc&searchname=<关键词>
+1. 打开 https://365.kdocs.cn 并进入任意 AirPage 文档编辑页
+2. 在 Chrome DevTools MCP 中列出网络请求，找一个对 365.kdocs.cn 的请求
+3. 读取该请求的 Request Headers 中的 Cookie 字段
+   （包含 wps_sid、kso_sid 等 HttpOnly cookie）
 ```
 
-详见: `references/file-search.md`
+**Step 2 — 获取 CSRF Token**
 
-## 块操作 API
+```javascript
+// Chrome DevTools MCP evaluate_script:
+() => window.__WPSENV__?.csrf_token
+```
+
+**Step 3 — 保存凭据**
+
+```bash
+node scripts/cli.js auth \
+  --set-cookie "wps_sid=V04...; kso_sid=..." \
+  --set-csrf "GpI+ztTX..."
+```
+
+## 文件 ID（关键！）
+
+**必须使用数字 ID，不能用短链。**
+
+```bash
+# 正确：252348553676
+node scripts/cli.js query 252348553676
+
+# 错误：cs4GHvOQrp2w（短链，API 会报错）
+```
+
+获取数字 file_id：
+1. `search <关键词>` 命令返回的 `[ID: xxxxxx]` 即为数字 ID
+2. 浏览器中打开文档后，`window.__WPSENV__.file_info.file.id` 也是数字 ID
+
+## 块操作 API 格式（经过验证）
 
 **统一端点**:
+
 ```
-POST https://365.kdocs.cn/api/v3/office/file/{file_id}/core/execute
+POST https://365.kdocs.cn/api/v3/office/file/{数字file_id}/core/execute
 Headers:
-  Cookie: <cookie>
+  Cookie: <完整cookie含wps_sid>
   x-csrf-rand: <csrf>
   Content-Type: application/json
 ```
 
-详见:
-- `references/block-ops.md` — 操作模板 + 关键限制
-- `references/data-structure.md` — 完整块/行内类型定义
-- `references/error-codes.md` — AirPage 错误码速查
-- `assets/` — 可直接使用的块数据示例 JSON
+### 查询块（已验证）
+
+```json
+{
+  "command": "http.otl.query",
+  "param": {
+    "name": "block.query",
+    "params": { "blockIds": ["doc"] }
+  }
+}
+```
+
+⚠️ **必须用 `blockIds`（数组），不是 `blockId`（单个字符串），否则报 1001 错误**
+
+响应的 `detail.result` 是**直接的 JSON 对象**（不是 base64），包含 `blocks` 数组和 `version`。
+
+### 插入块（已验证）
+
+```json
+{
+  "command": "http.otl.exec",
+  "param": {
+    "subtype": "block.insert",
+    "params": {
+      "blockId": "doc",
+      "index": 1,
+      "content": [
+        { "type": "paragraph", "content": [{ "type": "text", "text": "Hello" }] }
+      ]
+    }
+  }
+}
+```
+
+**`index` 必须 >= 1**（index 0 是 title，不可操作）
+
+### 更新块、删除块
+
+详见 `references/block-ops.md`
 
 ## 执行规范
 
-1. 每次操作前检查凭据是否存在，缺失则运行 `auth` 流程
-2. 搜索结果格式化为编号列表供用户选择
+1. 每次操作前检查凭据是否存在，缺失则运行鉴权流程
+2. `search` 结果格式化为编号列表供用户选择，展示数字 file_id
 3. API 响应 `result: "ok"` = 成功，否则对照 `references/error-codes.md` 展示错误
-4. 查询响应的 `data.result` 是 base64，需解码后读取
-5. 块内容变更后输出受影响的 block_id
-
-## 关键约束（插入操作）
-
-- `index` 必须 >= 1（title 固定 index 0）
-- 列表段落必须含 `contentIndent` + `listAttrs.styleType`
-- `blockQuote` 的 content 是 inline 节点，不嵌套 paragraph
-- `picture.sourceKey` 必须是 WPS 内部附件 ID，不能用外部 URL
+4. `detail.result` 是对象时直接使用；若为字符串则尝试 base64 解码
+5. 插入/更新操作后输出响应的 `version` 字段确认成功
 
 ## 内容快速参考
 
@@ -130,3 +176,10 @@ Headers:
 | `br` | 换行（仅用于 blockQuote 内） |
 | `emoji` | 表情 |
 | `linkView` | 超链接视图 |
+
+## 参考文件
+
+- `references/block-ops.md` — 操作模板 + 关键限制
+- `references/data-structure.md` — 完整块/行内类型定义
+- `references/error-codes.md` — AirPage 错误码速查
+- `assets/` — 可直接使用的块数据示例 JSON
