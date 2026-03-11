@@ -1,0 +1,6 @@
+{
+  "drive_id": "DRIVE_ID",
+  "name": "示例文档",
+  "on_name_conflict": "rename",
+  "parent_id": "0"
+}

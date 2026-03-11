@@ -1,0 +1,396 @@
+{
+  "blockId": "doc",
+  "index": 1,
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "content": "本文档展示了 WPS 智能文档（AirPage）支持的 " },
+        { "type": "text", "content": "各种富文本格式", "attrs": { "bold": true } },
+        { "type": "text", "content": "，包括 " },
+        { "type": "text", "content": "文字样式", "attrs": { "italic": true } },
+        { "type": "text", "content": "、表格、代码块、列表等丰富内容。由 " },
+        { "type": "text", "content": "wps-airpage", "attrs": { "bold": true, "color": { "fontColor": "#4285F4" } } },
+        { "type": "text", "content": " CLI 自动生成。" }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "content": "1. 文字样式展示" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "content": "普通文本 / " },
+        { "type": "text", "content": "加粗", "attrs": { "bold": true } },
+        { "type": "text", "content": " / " },
+        { "type": "text", "content": "斜体", "attrs": { "italic": true } },
+        { "type": "text", "content": " / " },
+        { "type": "text", "content": "下划线", "attrs": { "underline": true } },
+        { "type": "text", "content": " / " },
+        { "type": "text", "content": "删除线", "attrs": { "strike": true } },
+        { "type": "text", "content": " / " },
+        { "type": "text", "content": "加粗斜体", "attrs": { "bold": true, "italic": true } },
+        { "type": "text", "content": " / " },
+        { "type": "text", "content": "红色文字", "attrs": { "color": { "fontColor": "#FF0000" } } },
+        { "type": "text", "content": " / " },
+        { "type": "text", "content": "蓝色背景", "attrs": { "color": { "backgroundColor": "#E3F2FD" } } },
+        { "type": "text", "content": " / " },
+        { "type": "text", "content": "大号字体", "attrs": { "fontSize": { "fontSize": 19 } } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "content": "E = mc" },
+        { "type": "text", "content": "2", "attrs": { "sup": true } },
+        { "type": "text", "content": " — 爱因斯坦质能方程 | H" },
+        { "type": "text", "content": "2", "attrs": { "sub": true } },
+        { "type": "text", "content": "O — 水的化学式" }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "content": "2. 列表展示" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "无序列表" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 1, "styleType": 1, "level": 0 } },
+      "content": [{ "type": "text", "content": "大语言模型（LLM）" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 2, "listAttrs": { "type": 1, "styleType": 2, "level": 1 } },
+      "content": [{ "type": "text", "content": "GPT 系列" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 2, "listAttrs": { "type": 1, "styleType": 2, "level": 1 } },
+      "content": [{ "type": "text", "content": "Claude 系列" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 2, "listAttrs": { "type": 1, "styleType": 2, "level": 1 } },
+      "content": [{ "type": "text", "content": "开源模型（LLaMA、Qwen、DeepSeek）" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 1, "styleType": 1, "level": 0 } },
+      "content": [{ "type": "text", "content": "多模态 AI" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 1, "styleType": 1, "level": 0 } },
+      "content": [{ "type": "text", "content": "AI Agent 框架" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "有序列表" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 2, "styleType": 4, "level": 0 } },
+      "content": [{ "type": "text", "content": "需求分析与设计" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 2, "styleType": 4, "level": 0 } },
+      "content": [{ "type": "text", "content": "数据收集与预处理" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 2, "styleType": 4, "level": 0 } },
+      "content": [{ "type": "text", "content": "模型训练与微调" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 2, "styleType": 4, "level": 0 } },
+      "content": [{ "type": "text", "content": "部署与监控" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "任务列表" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 3, "styleType": 7, "level": 0 } },
+      "content": [{ "type": "text", "content": "完成 API 封装" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 3, "styleType": 7, "level": 0 } },
+      "content": [{ "type": "text", "content": "编写参考文档" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 3, "styleType": 7, "level": 0 } },
+      "content": [{ "type": "text", "content": "集成测试（进行中）" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "content": "3. 引用块" }]
+    },
+    {
+      "type": "blockQuote",
+      "content": [
+        { "type": "text", "content": "The best way to predict the future is to invent it.", "attrs": { "italic": true } },
+        { "type": "br" },
+        { "type": "text", "content": "— Alan Kay" }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "content": "4. 代码块展示" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "Python — 快速排序" }]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "lang": 7 },
+      "content": [{ "type": "text", "content": "def quicksort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + middle + quicksort(right)\n\nprint(quicksort([3, 6, 8, 10, 1, 2, 1]))\n# [1, 1, 2, 3, 6, 8, 10]" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "JavaScript — Fetch API" }]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "lang": 5 },
+      "content": [{ "type": "text", "content": "async function fetchData(url) {\n  try {\n    const response = await fetch(url);\n    if (!response.ok) throw new Error(`HTTP ${response.status}`);\n    const data = await response.json();\n    console.log('Data:', data);\n    return data;\n  } catch (error) {\n    console.error('Fetch failed:', error.message);\n  }\n}\n\nfetchData('https://api.example.com/users');" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "Go — HTTP Server" }]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "lang": 3 },
+      "content": [{ "type": "text", "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n)\n\nfunc handler(w http.ResponseWriter, r *http.Request) {\n\tfmt.Fprintf(w, \"Hello, %s!\", r.URL.Path[1:])\n}\n\nfunc main() {\n\thttp.HandleFunc(\"/\", handler)\n\thttp.ListenAndServe(\":8080\", nil)\n}" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "Rust — 所有权示例" }]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "lang": 19 },
+      "content": [{ "type": "text", "content": "fn main() {\n    let s1 = String::from(\"hello\");\n    let s2 = s1.clone(); // 深拷贝\n    println!(\"s1 = {}, s2 = {}\", s1, s2);\n\n    let s3 = s1; // s1 的所有权转移给 s3\n    // println!(\"{}\", s1); // 编译错误：s1 已失效\n    println!(\"s3 = {}\", s3);\n}" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "SQL — 数据分析查询" }]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "lang": 16 },
+      "content": [{ "type": "text", "content": "SELECT \n    department,\n    COUNT(*) AS employee_count,\n    AVG(salary) AS avg_salary,\n    MAX(salary) AS max_salary\nFROM employees\nWHERE hire_date >= '2024-01-01'\nGROUP BY department\nHAVING COUNT(*) > 5\nORDER BY avg_salary DESC;" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "Shell — 部署脚本" }]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "lang": 21 },
+      "content": [{ "type": "text", "content": "#!/bin/bash\nset -euo pipefail\n\nAPP_NAME=\"my-service\"\nIMAGE=\"registry.example.com/$APP_NAME:latest\"\n\necho \"Building $IMAGE...\"\ndocker build -t \"$IMAGE\" .\n\necho \"Pushing to registry...\"\ndocker push \"$IMAGE\"\n\necho \"Deploying to k8s...\"\nkubectl set image deployment/$APP_NAME app=$IMAGE\nkubectl rollout status deployment/$APP_NAME\n\necho \"Deploy complete!\"" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "content": "5. 表格展示" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "AI 模型对比" }]
+    },
+    {
+      "type": "table",
+      "attrs": { "borderStyle": 2 },
+      "content": [
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "attrs": { "width": 150 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "模型", "attrs": { "bold": true } }] }] },
+            { "type": "tableCell", "attrs": { "width": 120 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "厂商", "attrs": { "bold": true } }] }] },
+            { "type": "tableCell", "attrs": { "width": 120 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "参数量", "attrs": { "bold": true } }] }] },
+            { "type": "tableCell", "attrs": { "width": 150 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "特点", "attrs": { "bold": true } }] }] },
+            { "type": "tableCell", "attrs": { "width": 100 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "开源", "attrs": { "bold": true } }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "GPT-4o" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "OpenAI" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "未公开" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "多模态、快速推理" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "否" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "Claude Opus 4" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "Anthropic" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "未公开" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "长上下文、编程强" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "否" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "DeepSeek-V3" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "DeepSeek" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "671B (MoE)" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "性价比高、中文优秀" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "是" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "Qwen-2.5" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "阿里" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "72B" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "多语言、工具调用" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "是" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "LLaMA 3.1" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "Meta" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "405B" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "开源标杆、生态丰富" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "是" }] }] }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "content": "API 端点一览" }]
+    },
+    {
+      "type": "table",
+      "attrs": { "borderStyle": 2 },
+      "content": [
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "attrs": { "width": 80 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "方法", "attrs": { "bold": true } }] }] },
+            { "type": "tableCell", "attrs": { "width": 300 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "端点", "attrs": { "bold": true } }] }] },
+            { "type": "tableCell", "attrs": { "width": 200 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "说明", "attrs": { "bold": true } }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "POST" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "/v7/airpage/files" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "创建智能文档" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "GET" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "/v7/airpage/{file_id}" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "获取文档信息" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "POST" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "/v7/airpage/{file_id}/blocks/create" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "创建块内容" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "POST" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "/v7/airpage/{file_id}/blocks/update" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "更新文档块" }] }] }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "content": [
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "POST" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "/v7/airpage/{file_id}/blocks/convert" }] }] },
+            { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "content": "Markdown/HTML 转块数据" }] }] }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "content": "6. 高亮块" }]
+    },
+    {
+      "type": "highLightBlock",
+      "attrs": { "emoji": "💡" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "content": "提示：", "attrs": { "bold": true } },
+            { "type": "text", "content": "使用 " },
+            { "type": "text", "content": "wps-airpage convert", "attrs": { "bold": true } },
+            { "type": "text", "content": " 命令可以将 Markdown 内容直接转换为 AirPage 块数据格式，无需手动构造 JSON。" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "highLightBlock",
+      "attrs": { "emoji": "⚠️" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "content": "注意：", "attrs": { "bold": true } },
+            { "type": "text", "content": "块操作 API 的请求体 arg 参数必须经过 base64 编码。CLI 快捷命令已自动处理，使用通用 request 命令时需加 --encode 标志。" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "hr"
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "align": 2 },
+      "content": [
+        { "type": "text", "content": "本文档由 wps-airpage CLI v0.1.0 自动生成 | ", "attrs": { "color": { "fontColor": "#999999" } } },
+        { "type": "staticTime", "attrs": { "time": 1772701356000, "timeType": 2 } }
+      ]
+    }
+  ]
+}

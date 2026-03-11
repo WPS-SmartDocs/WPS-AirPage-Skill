@@ -86,34 +86,47 @@ Headers:
   Content-Type: application/json
 ```
 
-详见: `references/block-ops.md`（对应 `03_Resources/Work-WPS/Airpage-API-Reference.md`）
+详见:
+- `references/block-ops.md` — 操作模板 + 关键限制
+- `references/data-structure.md` — 完整块/行内类型定义
+- `references/error-codes.md` — AirPage 错误码速查
+- `assets/` — 可直接使用的块数据示例 JSON
 
 ## 执行规范
 
 1. 每次操作前检查凭据是否存在，缺失则运行 `auth` 流程
 2. 搜索结果格式化为编号列表供用户选择
-3. API 响应 `result: "ok"` = 成功，否则展示错误信息
-4. 块内容变更后输出受影响的 block_id
-5. 批量操作逐条列出结果
+3. API 响应 `result: "ok"` = 成功，否则对照 `references/error-codes.md` 展示错误
+4. 查询响应的 `data.result` 是 base64，需解码后读取
+5. 块内容变更后输出受影响的 block_id
+
+## 关键约束（插入操作）
+
+- `index` 必须 >= 1（title 固定 index 0）
+- 列表段落必须含 `contentIndent` + `listAttrs.styleType`
+- `blockQuote` 的 content 是 inline 节点，不嵌套 paragraph
+- `picture.sourceKey` 必须是 WPS 内部附件 ID，不能用外部 URL
 
 ## 内容快速参考
 
-**最常用的 block 类型**:
+**常用 block 类型**（完整定义见 `references/data-structure.md`）:
 
-| type | 说明 |
-|------|------|
-| `paragraph` | 段落 |
-| `heading1/2/3` | 标题 |
-| `bulletList` | 无序列表 |
-| `orderedList` | 有序列表 |
-| `code` | 代码块 |
-| `table` | 表格 |
-| `image` | 图片 |
+| type | 说明 | 关键属性 |
+|------|------|----------|
+| `paragraph` | 段落/列表项 | `align`, `contentIndent`, `listAttrs` |
+| `heading` | 标题 H1-H6 | `attrs.level`（1-6） |
+| `blockQuote` | 引用 | content 直接是 inline，含 `br` 换行 |
+| `codeBlock` | 代码块 | `attrs.lang`（数字编号，见 data-structure） |
+| `highLightBlock` | 高亮块 | `attrs.emoji`，不支持 style |
+| `table` | 表格 | 包含 tableRow > tableCell > paragraph |
+| `picture` | 图片 | `sourceKey`（内部附件 ID）, `width`, `height` |
+| `hr` | 分割线 | 无属性 |
 
 **inline 类型**:
 
 | type | 说明 |
 |------|------|
-| `text` | 纯文本 |
-| `link` | 链接 |
-| `bold/italic/underline/strike` | 格式 |
+| `text` | 文本，attrs 含 bold/italic/underline/strike/color/fontSize |
+| `br` | 换行（仅用于 blockQuote 内） |
+| `emoji` | 表情 |
+| `linkView` | 超链接视图 |

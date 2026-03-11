@@ -1,0 +1,7 @@
+{
+  "operation": "update_content",
+  "blockId": "BLOCK_ID",
+  "content": [
+    { "type": "text", "content": "更新后的文本内容", "attrs": { "bold": true } }
+  ]
+}

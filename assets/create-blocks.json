@@ -1,0 +1,25 @@
+{
+  "blockId": "doc",
+  "index": 1,
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "text", "content": "项目概述" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "content": "这是一个示例段落。" }]
+    },
+    {
+      "type": "paragraph",
+      "attrs": { "contentIndent": 1, "listAttrs": { "type": 1, "styleType": 1, "level": 0 } },
+      "content": [{ "type": "text", "content": "无序列表项 1" }]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "lang": 5 },
+      "content": [{ "type": "text", "content": "console.log('Hello');" }]
+    }
+  ]
+}
