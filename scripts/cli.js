@@ -47,8 +47,17 @@ program
   .description('查看/更新鉴权凭据（cookie + CSRF）')
   .option('--set-cookie <cookie>', '手动设置 cookie 字符串')
   .option('--set-csrf <csrf>', '手动设置 CSRF token')
+  .option('--browser', '启动浏览器自动提取凭据（需 playwright）')
   .option('--refresh', '提示如何重新提取（需配合 Chrome DevTools MCP）')
   .action((opts) => {
+    if (opts.browser) {
+      // 转发给 auth-browser.js
+      const { spawnSync } = require('child_process');
+      const result = spawnSync(process.execPath, [require.resolve('./auth-browser')], { stdio: 'inherit' });
+      process.exitCode = result.status ?? 0;
+      return;
+    }
+
     if (opts.setCookie || opts.setCsrf) {
       const status = getStatus();
       const existing = status.creds || {};

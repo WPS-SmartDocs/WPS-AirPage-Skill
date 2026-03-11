@@ -53,23 +53,28 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 
 ---
 
-### 方式一：Chrome DevTools MCP（推荐，全自动）
-
-**如未安装，先执行**（一次性）：
+### 方式一：`auth --browser` 脚本（推荐，无需任何 MCP）
 
 ```bash
-claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest
+node scripts/cli.js auth --browser
 ```
 
-安装后重启 Claude Code 会话，然后：
+首次运行自动安装 playwright + chromium（约 300MB，一次性），之后：
+1. 自动弹出 Chrome 窗口
+2. 在窗口中登录 WPS → 打开任意 AirPage 文档**编辑页**
+3. 脚本检测到编辑器加载后，自动提取完整 Cookie（含 wps_sid）和 CSRF
+4. 写入 `~/.claude/secrets/wps365.json`，完成
 
-1. 确认浏览器已打开某个 AirPage 文档**编辑页**（必须是编辑模式）
-2. 用 `mcp__chrome-devtools__get_network_request` 找一个对 `365.kdocs.cn` 的请求，读取 Request Headers 中的 `Cookie` 字段
+---
+
+### 方式二：Chrome DevTools MCP（已有 MCP 时使用）
+
+1. 确认浏览器已打开某个 AirPage 文档**编辑页**
+2. 用 `mcp__chrome-devtools__get_network_request` 找一个 `365.kdocs.cn` 请求，读取 Request Headers 中的 `Cookie`
 3. 用 `mcp__chrome-devtools__evaluate_script` 执行 `() => window.__WPSENV__?.csrf_token` 获取 CSRF
-4. 保存：
-   ```bash
-   node scripts/cli.js auth --set-cookie "<cookie>" --set-csrf "<csrf>"
-   ```
+4. 保存：`node scripts/cli.js auth --set-cookie "<cookie>" --set-csrf "<csrf>"`
+
+**如未安装**：`claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest`
 
 ---
 
