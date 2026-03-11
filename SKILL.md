@@ -78,7 +78,7 @@ node scripts/cli.js auth --browser
 
 ---
 
-### 方式二：手动提取（无需任何 MCP，始终可用）
+### 方式三：手动提取（无需任何 MCP，始终可用）
 
 1. 浏览器打开 AirPage 文档**编辑页**，按 **F12**
 2. **Network 标签** → 找任意对 `365.kdocs.cn` 的请求 → Request Headers → 复制 `cookie:` 完整值
@@ -206,7 +206,7 @@ Headers:
 
 operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `insert_table_columns` / `delete_table_rows` / `delete_table_columns` / `merge_table_cells` / `split_table_cell` / `replace_anchor` / `replace_feature`
 
-### 删除块
+### 删除块（单个）
 
 ```json
 {
@@ -222,7 +222,22 @@ operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `ins
 }
 ```
 
-> 范围为左闭右开 `[startIndex, endIndex)`。`params` 支持数组形式批量删除。
+> 范围为左闭右开 `[startIndex, endIndex)`。
+
+### 删除块（批量）
+
+```json
+{
+  "command": "http.otl.exec",
+  "param": {
+    "subtype": "block.delete",
+    "params": [
+      { "blockId": "xxx1", "startIndex": 1, "endIndex": 2 },
+      { "blockId": "xxx2", "startIndex": 0, "endIndex": 1 }
+    ]
+  }
+}
+```
 
 ### 转换 Markdown
 
@@ -237,6 +252,19 @@ operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `ins
 ```
 
 > ⚠️ 参数是 `format`（不是 `from`）
+
+### RangeMark（评论区间标记）
+
+查询块时，`content` 数组中可能出现 `rangeMarkBegin` / `rangeMarkEnd` 节点：
+
+```json
+{ "type": "rangeMarkBegin", "id": "abc", "data": [{ "type": "comment", "ids": ["..."] }] }
+{ "type": "rangeMarkEnd", "id": "abc" }
+```
+
+> ⚠️ **重要**：
+> - 调用 `insert` / `delete` 时，index 计算需**忽略** rangeMark 节点（它们不占真实位置）
+> - 调用 `update_content` 时，若希望**保留评论**，需将查询到的 rangeMark 节点原样放入 `content`
 
 ## 块类型快速参考
 
@@ -254,6 +282,8 @@ operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `ins
 | `hr` | 分割线 | 无属性 |
 | `column` / `columnItem` | 分栏 | columnItem.width（百分比字符串）|
 | `pictureColumn` | 并排图（2-5 张）| `width`, `align` |
+| `lockBlock` | 内容保护区（仅创建者可编辑）| 无属性 |
+| `blockAnchor` | 占位节点（loading 样式）| `id`（必填）, `aimType`（picture/video/processon/spreadsheet）, `width`, `height` |
 
 **inline 类型**（`content` 字段存文本，不是 `text`）:
 
@@ -266,6 +296,8 @@ operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `ins
 | `WPSUser` | @人 | userId/name |
 | `WPSDocument` | 云文档/附件 | wpsDocumentId/wpsDocumentName/viewType |
 | `latex` | 公式 | latexStr/width/height |
+| `schedule` | 日程 | id/name/startTime/endTime（unix ms）|
+| `staticTime` | 日期 | time（unix ms）, timeType（1-日期/2-日期时间）|
 
 > ⚠️ text 节点字段是 `content` 不是 `text`：`{ "type": "text", "content": "文字" }`
 
