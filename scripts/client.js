@@ -106,9 +106,11 @@ class AirpageClient {
   }
 
   updateBlocks(fileId, params) {
+    // params 必须是数组形式，单个对象自动包装
+    const normalizedParams = Array.isArray(params) ? params : [params];
     return this.execute(fileId, {
       command: 'http.otl.exec',
-      param: { subtype: 'block.update', params },
+      param: { subtype: 'block.update', params: normalizedParams },
     });
   }
 

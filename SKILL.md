@@ -186,16 +186,20 @@ Headers:
 
 ### 更新块
 
+> ⚠️ **`params` 必须是数组**（即使只有一个操作）。传单个对象会返回 `ExecuteFailed Invalid parameter`。CLI 已自动处理包装。
+
 ```json
 {
   "command": "http.otl.exec",
   "param": {
     "subtype": "block.update",
-    "params": {
-      "operation": "update_content",
-      "blockId": "xxx",
-      "content": [...]
-    }
+    "params": [
+      {
+        "operation": "update_content",
+        "blockId": "xxx",
+        "content": [...]
+      }
+    ]
   }
 }
 ```
