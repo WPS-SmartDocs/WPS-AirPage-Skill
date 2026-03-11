@@ -30,9 +30,8 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 | `insert <file_id> --block-id <id> --index <n> --content <json>` | 插入块（index >= 1）|
 | `update <file_id> --body <json>` | 更新块 |
 | `delete <file_id> --body <json>` | 删除块 |
-| `convert <file_id> --content <text>` | Markdown → 块数据 |
+| `convert <file_id> --from markdown --content <text>` | Markdown → 块数据 |
 | `new-doc --name <名称>` | 创建新 AirPage 文档 |
-| `decode <base64>` | 解码 base64（通常不需要，响应已自动处理）|
 
 ## 鉴权：获取 Cookie 和 CSRF
 
@@ -58,7 +57,7 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 
 ```
 1. 打开 https://365.kdocs.cn 并进入任意 AirPage 文档编辑页
-2. 在 Chrome DevTools MCP 中列出网络请求，找一个对 365.kdocs.cn 的请求
+2. 通过 mcp__chrome-devtools__get_network_request 找一个对 365.kdocs.cn 的请求
 3. 读取该请求的 Request Headers 中的 Cookie 字段
    （包含 wps_sid、kso_sid 等 HttpOnly cookie）
 ```
@@ -90,8 +89,8 @@ node scripts/cli.js query 252348553676
 ```
 
 获取数字 file_id：
-1. `search <关键词>` 命令返回的 `[ID: xxxxxx]` 即为数字 ID
-2. 浏览器中打开文档后，`window.__WPSENV__.file_info.file.id` 也是数字 ID
+1. `search <关键词>` 返回的 `[ID: xxxxxx]` 即为数字 ID
+2. `window.__WPSENV__.file_info.file.id` 也是数字 ID
 
 ## 块操作 API 格式（经过验证）
 
@@ -105,21 +104,34 @@ Headers:
   Content-Type: application/json
 ```
 
-### 查询块（已验证）
+### 查询块（单个）
 
 ```json
 {
   "command": "http.otl.query",
   "param": {
     "name": "block.query",
-    "params": { "blockIds": ["doc"] }
+    "params": { "blockId": "doc" }
   }
 }
 ```
 
-⚠️ **必须用 `blockIds`（数组），不是 `blockId`（单个字符串），否则报 1001 错误**
+> ⚠️ **单个查询用 `blockId`（字符串），批量查询用 `blockIds`（数组）**
+> 若单个查询报 1001，改用 `blockIds: ["doc"]` 数组形式也有效。
 
-响应的 `detail.result` 是**直接的 JSON 对象**（不是 base64），包含 `blocks` 数组和 `version`。
+### 查询块（批量）
+
+```json
+{
+  "command": "http.otl.query",
+  "param": {
+    "name": "block.query",
+    "params": { "blockIds": ["id1", "id2"] }
+  }
+}
+```
+
+查询响应的 `detail.result` 是**直接的 JSON 对象**（含 `blocks` 数组和 `version`），不是 base64。
 
 ### 插入块（已验证）
 
@@ -132,28 +144,69 @@ Headers:
       "blockId": "doc",
       "index": 1,
       "content": [
-        { "type": "paragraph", "content": [{ "type": "text", "text": "Hello" }] }
+        {
+          "type": "paragraph",
+          "content": [{ "type": "text", "content": "Hello" }]
+        }
       ]
     }
   }
 }
 ```
 
-**`index` 必须 >= 1**（index 0 是 title，不可操作）
+> `index` 默认 0，title 固定在 0，**实际插入从 1 开始**；负数表示首个子节点，超出范围则追加末尾。
 
-### 更新块、删除块
+### 更新块
 
-详见 `references/block-ops.md`
+```json
+{
+  "command": "http.otl.exec",
+  "param": {
+    "subtype": "block.update",
+    "params": {
+      "operation": "update_content",
+      "blockId": "xxx",
+      "content": [...]
+    }
+  }
+}
+```
 
-## 执行规范
+operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `insert_table_columns` / `delete_table_rows` / `delete_table_columns` / `merge_table_cells` / `split_table_cell` / `replace_anchor` / `replace_feature`
 
-1. 每次操作前检查凭据是否存在，缺失则运行鉴权流程
-2. `search` 结果格式化为编号列表供用户选择，展示数字 file_id
-3. API 响应 `result: "ok"` = 成功，否则对照 `references/error-codes.md` 展示错误
-4. `detail.result` 是对象时直接使用；若为字符串则尝试 base64 解码
-5. 插入/更新操作后输出响应的 `version` 字段确认成功
+### 删除块
 
-## 内容快速参考
+```json
+{
+  "command": "http.otl.exec",
+  "param": {
+    "subtype": "block.delete",
+    "params": {
+      "blockId": "doc",
+      "startIndex": 1,
+      "endIndex": 2
+    }
+  }
+}
+```
+
+> 范围为左闭右开 `[startIndex, endIndex)`。`params` 支持数组形式批量删除。
+
+### 转换 Markdown
+
+```json
+{
+  "command": "http.otl.query",
+  "param": {
+    "name": "convert",
+    "params": { "format": "markdown", "content": "# 标题" }
+  }
+}
+```
+
+> ⚠️ 参数是 `format`（不是 `from`）
+
+## 块类型快速参考
 
 **常用 block 类型**（完整定义见 `references/data-structure.md`）:
 
@@ -161,25 +214,32 @@ Headers:
 |------|------|----------|
 | `paragraph` | 段落/列表项 | `align`, `contentIndent`, `listAttrs` |
 | `heading` | 标题 H1-H6 | `attrs.level`（1-6） |
-| `blockQuote` | 引用 | content 直接是 inline，含 `br` 换行 |
-| `codeBlock` | 代码块 | `attrs.lang`（数字编号，见 data-structure） |
-| `highLightBlock` | 高亮块 | `attrs.emoji`，不支持 style |
-| `table` | 表格 | 包含 tableRow > tableCell > paragraph |
+| `blockQuote` | 引用 | content 直接是 inline 数组，`br` 换行 |
+| `codeBlock` | 代码块 | `attrs.lang`（数字，见 data-structure）, `autoWrap`, `theme` |
+| `highLightBlock` | 高亮块 | `attrs.emoji`（必填）, `attrs.style`（可选：fontColor/backgroundColor/borderColor）|
+| `table` | 表格 | 含 tableRow > tableCell > paragraph |
 | `picture` | 图片 | `sourceKey`（内部附件 ID）, `width`, `height` |
 | `hr` | 分割线 | 无属性 |
+| `column` / `columnItem` | 分栏 | columnItem.width（百分比字符串）|
+| `pictureColumn` | 并排图（2-5 张）| `width`, `align` |
 
-**inline 类型**:
+**inline 类型**（`content` 字段存文本，不是 `text`）:
 
-| type | 说明 |
-|------|------|
-| `text` | 文本，attrs 含 bold/italic/underline/strike/color/fontSize |
-| `br` | 换行（仅用于 blockQuote 内） |
-| `emoji` | 表情 |
-| `linkView` | 超链接视图 |
+| type | 说明 | 关键属性 |
+|------|------|----------|
+| `text` | 文本 | `content`（必填）; attrs: bold/italic/underline/strike/color/fontSize |
+| `br` | 换行（仅 blockQuote 内）| 无 |
+| `emoji` | 表情 | `attrs.emoji` |
+| `linkView` | 超链接 | title/url/viewType/sourceKey/description |
+| `WPSUser` | @人 | userId/name |
+| `WPSDocument` | 云文档/附件 | wpsDocumentId/wpsDocumentName/viewType |
+| `latex` | 公式 | latexStr/width/height |
+
+> ⚠️ text 节点字段是 `content` 不是 `text`：`{ "type": "text", "content": "文字" }`
 
 ## 参考文件
 
-- `references/block-ops.md` — 操作模板 + 关键限制
-- `references/data-structure.md` — 完整块/行内类型定义
-- `references/error-codes.md` — AirPage 错误码速查
-- `assets/` — 可直接使用的块数据示例 JSON
+- `references/block-ops.md` — 操作模板
+- `references/data-structure.md` — 完整类型定义
+- `references/error-codes.md` — 错误码速查
+- `assets/` — 块数据示例 JSON

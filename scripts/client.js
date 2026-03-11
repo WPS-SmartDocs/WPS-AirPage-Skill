@@ -119,10 +119,10 @@ class AirpageClient {
     });
   }
 
-  convertContent(fileId, content, from = 'markdown') {
+  convertContent(fileId, content, format = 'markdown') {
     return this.execute(fileId, {
       command: 'http.otl.query',
-      param: { name: 'convert', params: { content, from } },
+      param: { name: 'convert', params: { content, format } },
     });
   }
 }

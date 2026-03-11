@@ -103,7 +103,7 @@ program
       }
       console.log(`找到 ${files.length} 个文档:\n`);
       files.forEach((f, i) => {
-        console.log(`  ${i + 1}. ${f.fname.padEnd(30)} [ID: ${f.id}]  修改: ${formatDate(f.modify_time)}`);
+        console.log(`  ${i + 1}. ${f.fname.padEnd(30)} [ID: ${f.id}]  修改: ${formatDate(f.mtime)}`);
       });
       console.log('\n提示: export WPS_FILE_ID=<ID> 设置默认文档');
     } catch (err) { handleError(err); }
@@ -216,7 +216,7 @@ program
       const client = new AirpageClient();
       const result = await client.newDoc(opts.name);
       console.log(JSON.stringify(result, null, 2));
-      const fileId = result.data?.file_id || result.file_id;
+      const fileId = result.data?.fileid || result.fileid || result.data?.file_id || result.file_id;
       if (fileId) {
         console.log(`\n提示: export WPS_FILE_ID=${fileId}`);
       }
