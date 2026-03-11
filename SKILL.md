@@ -204,7 +204,20 @@ Headers:
 }
 ```
 
-operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `insert_table_columns` / `delete_table_rows` / `delete_table_columns` / `merge_table_cells` / `split_table_cell` / `replace_anchor` / `replace_feature`
+operation 类型及关键参数（均已通过 CLI 验证 ✅）:
+
+| operation | 必填参数 | 说明 |
+|-----------|---------|------|
+| `update_content` | `blockId`, `content[]` | 更新块内容 |
+| `update_attrs` | `blockId`, `attrs{}` | 更新块属性 |
+| `insert_table_rows` | `blockId`, `content[]`（行数组，每行含列数个 tableCell）| `start` 可选，插入位置 |
+| `insert_table_columns` | `blockId`, `content[]`（行数数组，每行含 1 个 tableCell）| `start` 可选，需与表格行数对齐 |
+| `delete_table_rows` | `blockId`, `count`（≥1）| `start` 可选（起始行号），`start+count` ≤ 总行数 |
+| `delete_table_columns` | `blockId`, `count`（≥1）| `start` 可选（起始列号） |
+| `merge_table_cells` | `blockId`, `rowSpan`, `colSpan`（不可同时为 1）| `startRow`/`startCol` 可选 |
+| `split_table_cell` | `blockId` | `startRow`/`startCol` 可选，目标必须是合并单元格 |
+| `replace_anchor` | `blockId`, `anchorId`, `content{type,attrs{}}` | `content.attrs` 须嵌套；无匹配返回 "no match block anchor" |
+| `replace_feature` | `blockId`, `source{type,attrs{}}`, `target{type,attrs{}}` | 支持 WPSUser/WPSDocument/schedule；无匹配返回 1014 |
 
 ### 删除块（单个）
 
@@ -300,6 +313,37 @@ operation 类型: `update_content` / `update_attrs` / `insert_table_rows` / `ins
 | `staticTime` | 日期 | time（unix ms）, timeType（1-日期/2-日期时间）|
 
 > ⚠️ text 节点字段是 `content` 不是 `text`：`{ "type": "text", "content": "文字" }`
+
+## API 验证状态（file_id: 500419903935）
+
+以下所有操作均通过 CLI (`node scripts/cli.js`) 实测验证 ✅：
+
+| 操作 | 命令 | 状态 |
+|------|------|------|
+| 搜索文档 | `search` | ✅ |
+| 查询块 | `query` / `batch-query` | ✅ |
+| 插入块 | `insert` | ✅ |
+| update_content | `update --body '[{...}]'` | ✅ |
+| update_attrs | `update --body '[{...}]'` | ✅ |
+| insert_table_rows | `update` | ✅ |
+| insert_table_columns | `update` | ✅ |
+| delete_table_rows | `update` | ✅ |
+| delete_table_columns | `update` | ✅ |
+| merge_table_cells | `update` | ✅ |
+| split_table_cell | `update` | ✅ |
+| replace_anchor | `update` | ✅（无匹配锚点时返回 "no match block anchor"，格式正确）|
+| replace_feature | `update` | ✅（无匹配特性时返回 1014，格式正确）|
+| 删除块 | `delete` | ✅ |
+| Markdown 转换 | `convert` | ✅ |
+| 创建文档 | `new-doc` | ✅ |
+
+**已修正的 API 格式问题（避免重蹈）**：
+1. `block.query` 单个查询也用 `blockIds: ["id"]` 数组形式（singular `blockId` 返回 1001）
+2. `block.update` 的 `params` 必须是**数组** `[{...}]`，单对象返回 500410002
+3. `convert` 参数是 `format`，不是 `from`
+4. text inline 节点字段是 `content`，不是 `text`
+5. `delete_table_rows`/`delete_table_columns` 参数是 `start`/`count`，不是 `startIndex`/`endIndex`
+6. `replace_anchor` 的 `content` 格式：`{"type": "picture", "attrs": {...}}`（attrs 嵌套）
 
 ## 参考文件
 
