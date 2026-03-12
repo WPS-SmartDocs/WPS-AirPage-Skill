@@ -22,8 +22,10 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 
 | 命令 | 示例 |
 |------|------|
-| `auth --set-cookie <c> --set-csrf <t>` | 保存凭据到 `~/.claude/secrets/wps365.json` |
-| `auth --refresh` | 打印提取步骤 |
+| `auth --install-mcp` | 安装 Chrome DevTools MCP（推荐，一键，需重启会话）|
+| `auth --browser` | 启动浏览器自动提取（无 MCP 时使用）|
+| `auth --set-cookie <c> --set-csrf <t>` | 手动保存凭据到 `~/.claude/secrets/wps365.json` |
+| `auth --refresh` | 打印手动提取步骤 |
 | `search <关键词>` | 搜索文档，返回数字 file_id |
 | `query <file_id> [block_id]` | 查询块（默认 doc）|
 | `batch-query <file_id> <id1> <id2>` | 批量查询 |
@@ -57,7 +59,32 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 
 ---
 
-### 方式一：`auth --browser` 脚本（推荐，无需任何 MCP）
+### 方式一：Chrome DevTools MCP【最推荐 — 浏览器已开文档时全自动】
+
+**已装 MCP 时**：浏览器已打开 AirPage 文档编辑页，Claude 执行以下步骤即可，无需用户任何操作：
+
+```
+1. mcp__chrome-devtools__list_network_requests  → 找到 365.kdocs.cn 的请求
+2. mcp__chrome-devtools__get_network_request    → 读取 Request Headers 里的 cookie 字段
+3. mcp__chrome-devtools__evaluate_script        → () => window.__WPSENV__?.csrf_token
+4. node scripts/cli.js auth --set-cookie "<cookie>" --set-csrf "<csrf>"
+```
+
+**未装 MCP 时，一键安装**：
+
+```bash
+# CLI 一键安装（推荐）
+node scripts/cli.js auth --install-mcp
+
+# 或手动
+claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest
+```
+
+安装后重启 Claude Code 会话，MCP 即生效。之后只要浏览器开着 AirPage 文档，Claude 可随时自动刷新凭据。
+
+---
+
+### 方式二：`auth --browser` 脚本（无任何 MCP、浏览器未开时使用）
 
 ```bash
 node scripts/cli.js auth --browser
@@ -71,18 +98,7 @@ node scripts/cli.js auth --browser
 
 ---
 
-### 方式二：Chrome DevTools MCP（已有 MCP 时使用）
-
-1. 确认浏览器已打开某个 AirPage 文档**编辑页**
-2. 用 `mcp__chrome-devtools__get_network_request` 找一个 `365.kdocs.cn` 请求，读取 Request Headers 中的 `Cookie`
-3. 用 `mcp__chrome-devtools__evaluate_script` 执行 `() => window.__WPSENV__?.csrf_token` 获取 CSRF
-4. 保存：`node scripts/cli.js auth --set-cookie "<cookie>" --set-csrf "<csrf>"`
-
-**如未安装**：`claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest`
-
----
-
-### 方式三：手动提取（无需任何 MCP，始终可用）
+### 方式三：手动 F12（兜底，无需任何工具）
 
 1. 浏览器打开 AirPage 文档**编辑页**，按 **F12**
 2. **Network 标签** → 找任意对 `365.kdocs.cn` 的请求 → Request Headers → 复制 `cookie:` 完整值
@@ -91,15 +107,6 @@ node scripts/cli.js auth --browser
    ```bash
    node scripts/cli.js auth --set-cookie "wps_sid=...;..." --set-csrf "GpI+..."
    ```
-
----
-
-### 方式三：Playwright MCP（部分自动化）
-
-CSRF 可自动提取，Cookie 仍需手动：
-
-- CSRF：`mcp__playwright__browser_evaluate` → `() => window.__WPSENV__?.csrf_token`
-- Cookie（含 HttpOnly wps_sid）：需配合方式二的 F12 → Network 步骤手动获取
 
 ---
 

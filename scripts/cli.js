@@ -48,8 +48,25 @@ program
   .option('--set-cookie <cookie>', '手动设置 cookie 字符串')
   .option('--set-csrf <csrf>', '手动设置 CSRF token')
   .option('--browser', '启动浏览器自动提取凭据（需 playwright）')
+  .option('--install-mcp', '安装 Chrome DevTools MCP（推荐，浏览器已开文档时全自动提取）')
   .option('--refresh', '提示如何重新提取（需配合 Chrome DevTools MCP）')
   .action((opts) => {
+    if (opts.installMcp) {
+      const { execSync } = require('child_process');
+      console.log('正在安装 Chrome DevTools MCP...');
+      console.log('命令: claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest\n');
+      try {
+        execSync('claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest', { stdio: 'inherit' });
+        console.log('\n✓ 安装完成！请重启 Claude Code 会话使 MCP 生效。');
+        console.log('  之后只要浏览器打开着 AirPage 文档，Claude 可自动提取凭据。');
+      } catch (e) {
+        console.error('安装失败:', e.message);
+        console.log('请手动运行: claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest');
+        process.exitCode = 1;
+      }
+      return;
+    }
+
     if (opts.browser) {
       // 转发给 auth-browser.js
       const { spawnSync } = require('child_process');
