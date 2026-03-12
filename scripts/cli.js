@@ -232,6 +232,66 @@ program
     } catch (err) { handleError(err); }
   });
 
+// ── comments ──────────────────────────────────────────
+program
+  .command('comments <file_id>')
+  .description('查询文档评论')
+  .option('--sids <ids>', '按 selection_id 过滤（逗号分隔）')
+  .option('--cids <ids>', '按 comment_id 过滤（逗号分隔）')
+  .option('--page <n>', '页码', '0')
+  .option('--size <n>', '每页数量（最大 100）', '20')
+  .option('--order <asc|desc>', '排序方向', 'desc')
+  .action(async (fileId, opts) => {
+    try {
+      const client = new AirpageClient();
+      const result = await client.queryComments(fileId, {
+        sids: opts.sids, cids: opts.cids,
+        pageno: opts.page, size: opts.size, order: opts.order,
+      });
+      const sels = result.selections || [];
+      console.log(`共 ${sels.length} 个选区\n`);
+      sels.forEach(sel => {
+        console.log(`[选区 ${sel.selection_id}] 评论数: ${sel.comment_count}  文本: "${sel.selection_text}"`);
+        (sel.comments || []).forEach(c => {
+          const prefix = c.reply_id ? '  └─ 回复' : '  ●';
+          console.log(`  ${prefix} [${c.id.slice(0, 8)}] ${c.content?.text}`);
+        });
+      });
+    } catch (err) { handleError(err); }
+  });
+
+program
+  .command('comment-add <file_id>')
+  .description('创建评论（selection_id 可自定义字符串，作为评论锚点 ID）')
+  .requiredOption('--sid <selection_id>', '选区 ID（可自定义任意字符串）')
+  .requiredOption('--text <text>', '评论内容')
+  .option('--reply-id <comment_id>', '回复指定评论 ID')
+  .action(async (fileId, opts) => {
+    try {
+      const client = new AirpageClient();
+      const body = { selection_id: opts.sid, content: { text: opts.text }, type: 0 };
+      if (opts.replyId) body.reply_id = opts.replyId;
+      const result = await client.upsertComment(fileId, body);
+      console.log(JSON.stringify(result, null, 2));
+    } catch (err) { handleError(err); }
+  });
+
+program
+  .command('comment-update <file_id>')
+  .description('更新评论内容')
+  .requiredOption('--id <comment_id>', '评论 ID')
+  .requiredOption('--sid <selection_id>', '选区 ID')
+  .requiredOption('--text <text>', '新的评论内容')
+  .action(async (fileId, opts) => {
+    try {
+      const client = new AirpageClient();
+      const result = await client.upsertComment(fileId, {
+        id: opts.id, selection_id: opts.sid, content: { text: opts.text },
+      });
+      console.log(JSON.stringify(result, null, 2));
+    } catch (err) { handleError(err); }
+  });
+
 // ── upload-image ──────────────────────────────────────
 program
   .command('upload-image <file_id> <image_path>')

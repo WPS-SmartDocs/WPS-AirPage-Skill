@@ -33,6 +33,9 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 | `convert <file_id> --from markdown --content <text>` | Markdown → 块数据 |
 | `new-doc --name <名称>` | 创建新 AirPage 文档 |
 | `upload-image <file_id> <image_path> [--index <n>] [--width <w>] [--height <h>]` | 上传图片并插入文档（index=0 仅上传不插入）|
+| `comments <file_id> [--sids <ids>] [--cids <ids>]` | 查询评论列表 |
+| `comment-add <file_id> --sid <selection_id> --text <text> [--reply-id <id>]` | 创建/回复评论 |
+| `comment-update <file_id> --id <comment_id> --sid <sid> --text <text>` | 更新评论内容 |
 
 ## 鉴权：获取 Cookie 和 CSRF
 
@@ -120,6 +123,43 @@ node scripts/cli.js query 252348553676
 获取数字 file_id：
 1. `search <关键词>` 返回的 `[ID: xxxxxx]` 即为数字 ID
 2. `window.__WPSENV__.file_info.file.id` 也是数字 ID
+
+## 评论 API
+
+评论走独立端点（非 core/execute），仅需 Cookie + x-csrf-rand。
+
+```
+POST /api/v3/office/outline/file/{file_id}/comment
+GET  /api/v3/office/outline/file/{file_id}/comments
+```
+
+**创建评论**：`selection_id` 可以是任意自定义字符串（作为评论锚点 ID），不需要预先创建选区。
+
+```json
+{ "selection_id": "my-anchor-01", "content": { "text": "评论内容" }, "type": 0 }
+```
+
+**回复评论**：额外传 `reply_id`（被回复的 comment_id）。
+
+```json
+{ "selection_id": "my-anchor-01", "reply_id": "<comment_id>", "content": { "text": "回复内容" }, "type": 0 }
+```
+
+**更新评论**：传 `id`（comment_id）+ `selection_id` + 新 `content`，`selection_id` 不可省略。
+
+```json
+{ "id": "<comment_id>", "selection_id": "my-anchor-01", "content": { "text": "更新后内容" } }
+```
+
+**查询评论**：
+
+```
+GET /comments?sids=sid1,sid2   ← 按选区过滤
+GET /comments?cids=id1,id2     ← 按评论 ID 过滤
+GET /comments?pageno=0&size=20&order=desc  ← 分页
+```
+
+> ⚠️ 更新评论时必须传 `selection_id`，否则返回 "selection id invalid"
 
 ## 附件上传（图片/视频/文件）
 
@@ -384,6 +424,10 @@ operation 类型及关键参数（均已通过 CLI 验证 ✅）:
 | Markdown 转换 | `convert` | ✅ |
 | 创建文档 | `new-doc` | ✅ |
 | 附件上传（图片）| `upload-image` | ✅（attachment_id=`EAPFAIRGACADE`，picture 块插入成功）|
+| 评论查询 | `comments` | ✅ |
+| 评论创建 | `comment-add` | ✅（`selection_id` 可自定义任意字符串）|
+| 评论回复 | `comment-add --reply-id` | ✅ |
+| 评论更新 | `comment-update` | ✅（需同时传 `--sid`）|
 
 **已修正的 API 格式问题（避免重蹈）**：
 1. `block.query` 单个查询也用 `blockIds: ["id"]` 数组形式（singular `blockId` 返回 1001）

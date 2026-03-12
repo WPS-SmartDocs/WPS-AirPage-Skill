@@ -127,6 +127,39 @@ class AirpageClient {
       param: { name: 'convert', params: { content, format } },
     });
   }
+
+  // ── 评论操作 ──────────────────────────────────────────
+
+  /**
+   * 查询评论
+   * @param {string} fileId
+   * @param {object} opts - { sids, cids, pageno, size, order }
+   */
+  queryComments(fileId, opts = {}) {
+    const params = new URLSearchParams();
+    if (opts.sids) params.set('sids', Array.isArray(opts.sids) ? opts.sids.join(',') : opts.sids);
+    if (opts.cids) params.set('cids', Array.isArray(opts.cids) ? opts.cids.join(',') : opts.cids);
+    if (opts.pageno != null) params.set('pageno', opts.pageno);
+    if (opts.size) params.set('size', opts.size);
+    if (opts.order) params.set('order', opts.order);
+    const qs = params.toString();
+    const url = `${BASE_URL}/api/v3/office/outline/file/${fileId}/comments${qs ? '?' + qs : ''}`;
+    return request(url, { headers: { Cookie: this.cookie, 'x-csrf-rand': this.csrf } });
+  }
+
+  /**
+   * 创建/回复/更新评论
+   * 创建：{ selection_id, content, type }
+   * 回复：{ selection_id, reply_id, content, type }
+   * 更新：{ id, selection_id, content }
+   */
+  upsertComment(fileId, body) {
+    return request(`${BASE_URL}/api/v3/office/outline/file/${fileId}/comment`, {
+      method: 'POST',
+      headers: { Cookie: this.cookie, 'x-csrf-rand': this.csrf },
+      body,
+    });
+  }
 }
 
 module.exports = { AirpageClient };
