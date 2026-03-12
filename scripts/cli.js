@@ -232,6 +232,43 @@ program
     } catch (err) { handleError(err); }
   });
 
+// ── upload-image ──────────────────────────────────────
+program
+  .command('upload-image <file_id> <image_path>')
+  .description('上传图片并插入到文档（返回 attachment_id 可作为 picture.sourceKey）')
+  .option('--index <n>', '插入位置（>= 1），0 表示仅上传不插入', '0')
+  .option('--width <n>', '图片宽度（px）')
+  .option('--height <n>', '图片高度（px）')
+  .action(async (fileId, imagePath, opts) => {
+    try {
+      const { uploadAttachment } = require('./attachment');
+      const { loadCredentials } = require('./credentials');
+      const resolvedPath = require('path').resolve(imagePath);
+      if (!require('fs').existsSync(resolvedPath)) {
+        throw new Error(`文件不存在: ${resolvedPath}`);
+      }
+      const creds = loadCredentials();
+      console.error('上传图片中...');
+      const { attachment_id } = await uploadAttachment(fileId, resolvedPath, creds.cookie);
+      console.error(`附件上传成功: ${attachment_id}`);
+
+      const index = parseInt(opts.index, 10);
+      if (index < 1) {
+        console.log(JSON.stringify({ attachment_id }));
+        return;
+      }
+
+      const client = new AirpageClient();
+      const pictureAttrs = { sourceKey: attachment_id };
+      if (opts.width) pictureAttrs.width = parseInt(opts.width, 10);
+      if (opts.height) pictureAttrs.height = parseInt(opts.height, 10);
+      const result = await client.insertBlocks(fileId, 'doc', index, [
+        { type: 'picture', attrs: pictureAttrs },
+      ]);
+      console.log(JSON.stringify({ attachment_id, insert: result }, null, 2));
+    } catch (err) { handleError(err); }
+  });
+
 // ── decode ────────────────────────────────────────────
 program
   .command('decode <base64_string>')

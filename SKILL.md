@@ -32,6 +32,7 @@ CLI 风格操作 WPS 365 智能文档（AirPage）。
 | `delete <file_id> --body <json>` | 删除块 |
 | `convert <file_id> --from markdown --content <text>` | Markdown → 块数据 |
 | `new-doc --name <名称>` | 创建新 AirPage 文档 |
+| `upload-image <file_id> <image_path> [--index <n>] [--width <w>] [--height <h>]` | 上传图片并插入文档（index=0 仅上传不插入）|
 
 ## 鉴权：获取 Cookie 和 CSRF
 
@@ -119,6 +120,50 @@ node scripts/cli.js query 252348553676
 获取数字 file_id：
 1. `search <关键词>` 返回的 `[ID: xxxxxx]` 即为数字 ID
 2. `window.__WPSENV__.file_info.file.id` 也是数字 ID
+
+## 附件上传（图片/视频/文件）
+
+上传附件获取 `attachment_id`，再作为 `sourceKey` 插入 picture/video 块。
+
+**CLI（推荐）**：
+
+```bash
+# 上传并插入图片（index=1 插在第一个内容块位置）
+node scripts/cli.js upload-image <file_id> ./photo.jpg --index 1 --width 800 --height 600
+
+# 仅上传，返回 attachment_id（后续手动插入）
+node scripts/cli.js upload-image <file_id> ./photo.jpg --index 0
+```
+
+**原始 API 三步流程**（`scripts/attachment.js` 已封装）：
+
+```
+# Step 1: 获取上传地址
+POST /api/v3/office/file/{file_id}/attachment/upload/address
+Headers: Cookie / Content-Type / Origin: https://365.kdocs.cn   ← Origin 必须加，否则 SessionDeleted
+Body: { name, size, sha1 }  → 返回 { request: {url,method,headers}, upload_id }
+
+# Step 2: 上传二进制到存储
+{request.method} {request.url}
+Headers: ...request.headers + Content-Type: application/octet-stream
+Body: <file binary>  → Response Headers: etag / x-obs-save-key
+
+# Step 3: 提交完成
+POST /api/v3/office/file/{file_id}/attachment/upload/complete
+Body: { upload_id, params: { etag, key } }  → 返回 { attachment_id }
+```
+
+> ✅ `file_id` 支持数字 ID，无需 link_id
+> ⚠️ `Origin: https://365.kdocs.cn` 头是必须的，缺少会返回 SessionDeleted
+
+**picture 块插入示例**（上传后）：
+
+```json
+{
+  "type": "picture",
+  "attrs": { "sourceKey": "<attachment_id>", "width": 800, "height": 600 }
+}
+```
 
 ## 块操作 API 格式（经过验证）
 
@@ -291,7 +336,9 @@ operation 类型及关键参数（均已通过 CLI 验证 ✅）:
 | `codeBlock` | 代码块 | `attrs.lang`（数字，见 data-structure）, `autoWrap`, `theme` |
 | `highLightBlock` | 高亮块 | `attrs.emoji`（必填）, `attrs.style`（可选：fontColor/backgroundColor/borderColor）|
 | `table` | 表格 | 含 tableRow > tableCell > paragraph |
-| `picture` | 图片 | `sourceKey`（内部附件 ID）, `width`, `height` |
+| `picture` | 图片 | `attrs.sourceKey`（attachment_id）, `attrs.width`, `attrs.height` |
+| `video` | 视频 | `attrs.sourceId`（视频资源 id）, `attrs.sourceKey`（封面图 id）, `attrs.width`, `attrs.height` |
+| `audio` | 音频 | `attrs.sourceId`（音频资源 id）, `attrs.title` |
 | `hr` | 分割线 | 无属性 |
 | `column` / `columnItem` | 分栏 | columnItem.width（百分比字符串）|
 | `pictureColumn` | 并排图（2-5 张）| `width`, `align` |
@@ -336,6 +383,7 @@ operation 类型及关键参数（均已通过 CLI 验证 ✅）:
 | 删除块 | `delete` | ✅ |
 | Markdown 转换 | `convert` | ✅ |
 | 创建文档 | `new-doc` | ✅ |
+| 附件上传（图片）| `upload-image` | ✅（attachment_id=`EAPFAIRGACADE`，picture 块插入成功）|
 
 **已修正的 API 格式问题（避免重蹈）**：
 1. `block.query` 单个查询也用 `blockIds: ["id"]` 数组形式（singular `blockId` 返回 1001）
@@ -344,6 +392,7 @@ operation 类型及关键参数（均已通过 CLI 验证 ✅）:
 4. text inline 节点字段是 `content`，不是 `text`
 5. `delete_table_rows`/`delete_table_columns` 参数是 `start`/`count`，不是 `startIndex`/`endIndex`
 6. `replace_anchor` 的 `content` 格式：`{"type": "picture", "attrs": {...}}`（attrs 嵌套）
+7. 附件上传端点必须加 `Origin: https://365.kdocs.cn` 头，否则返回 SessionDeleted（与 core/execute 不同）
 
 ## 参考文件
 
