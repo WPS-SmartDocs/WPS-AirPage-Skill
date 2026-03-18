@@ -91,7 +91,8 @@ program
 
 1. 在浏览器打开 https://365.kdocs.cn 并打开任意 AirPage 文档
 2. 在 Claude 会话中执行：
-   - mcp__chrome-devtools__evaluate_script: document.cookie
+   - mcp__chrome-devtools__list_network_requests
+   - mcp__chrome-devtools__get_network_request（从 Request Headers 复制完整 cookie）
    - mcp__chrome-devtools__evaluate_script: window.__WPSENV__.csrf_token
 3. 将结果填入：
    wps-airpage auth --set-cookie "<cookie>" --set-csrf "<csrf>"
@@ -242,9 +243,10 @@ program
       const client = new AirpageClient();
       const result = await client.newDoc(opts.name);
       console.log(JSON.stringify(result, null, 2));
-      const fileId = result.data?.fileid || result.fileid || result.data?.file_id || result.file_id;
-      if (fileId) {
-        console.log(`\n提示: export WPS_FILE_ID=${fileId}`);
+      if (result.fileid) {
+        console.log(`\nfile_id: ${result.fileid}`);
+        if (result.doc_url) console.log(`文档链接: ${result.doc_url}`);
+        console.log(`提示: export WPS_FILE_ID=${result.fileid}`);
       }
     } catch (err) { handleError(err); }
   });
@@ -346,6 +348,55 @@ program
     } catch (err) { handleError(err); }
   });
 
+// ── insert-markdown ───────────────────────────────────
+program
+  .command('insert-markdown <file_id>')
+  .description('插入 Markdown 内容到文档（title/content 必填其一）')
+  .option('--title <text>', '文档大标题')
+  .option('--content <text>', 'Markdown 正文内容，或 @filepath 读取文件')
+  .option('--pos <pos>', '插入位置: begin | end', 'end')
+  .action(async (fileId, opts) => {
+    try {
+      if (!opts.title && !opts.content) {
+        console.error('错误: --title 或 --content 必填其一');
+        process.exitCode = 1;
+        return;
+      }
+      let content = opts.content;
+      if (content && content.startsWith('@')) {
+        const { readFileSync } = require('fs');
+        const { resolve } = require('path');
+        content = readFileSync(resolve(content.slice(1)), 'utf-8');
+      }
+      const client = new AirpageClient();
+      const result = await client.insertMarkdown(fileId, {
+        title: opts.title,
+        content,
+        pos: opts.pos,
+      });
+      console.log(JSON.stringify(result, null, 2));
+    } catch (err) { handleError(err); }
+  });
+
+// ── outline ───────────────────────────────────────────
+program
+  .command('outline <file_id>')
+  .description('获取文档目录结构（标题列表）')
+  .option('--format <fmt>', '响应格式: json | markdown', 'markdown')
+  .action(async (fileId, opts) => {
+    try {
+      const client = new AirpageClient();
+      const result = await client.queryOutline(fileId, opts.format);
+      if (opts.format === 'markdown') {
+        const items = result?.detail || [];
+        if (!items.length) { console.log('（文档无标题）'); return; }
+        items.forEach(item => console.log(item.markdown));
+      } else {
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (err) { handleError(err); }
+  });
+
 // ── decode ────────────────────────────────────────────
 program
   .command('decode <base64_string>')
@@ -359,5 +410,21 @@ program
       process.exitCode = 1;
     }
   });
+
+// ── interactive ───────────────────────────────────────
+program
+  .command('interactive')
+  .alias('i')
+  .description('启动交互式向导（搜索/新建文档、插入内容、查看目录等）')
+  .action(async () => {
+    const { main } = require('./interactive');
+    try { await main(); } catch (err) { handleError(err); }
+  });
+
+// 无子命令时默认进入交互模式
+program.action(async () => {
+  const { main } = require('./interactive');
+  try { await main(); } catch (err) { handleError(err); }
+});
 
 program.parseAsync().catch(handleError);

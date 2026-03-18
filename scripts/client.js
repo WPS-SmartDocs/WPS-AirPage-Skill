@@ -70,6 +70,7 @@ class AirpageClient {
 
   /**
    * 创建新文档（type: o = AirPage）
+   * 返回值包含 fileid、groupid（通过 search 补全）、doc_url（完整编辑页链接）
    */
   async newDoc(name, type = 'o') {
     if (!this.csrf) throw new AirpageError('缺少 CSRF token，请运行: wps-airpage auth');
@@ -78,8 +79,24 @@ class AirpageClient {
       headers: { Cookie: this.cookie, 'x-csrf-rand': this.csrf },
       body: { fname: name },
     });
-    if (data.result !== 'ok') throw createApiError(data);
-    return data;
+    // new-doc 响应只有 {"fileid":"<id>"}，不含 result:"ok"
+    const fileId = String(data.fileid || data.data?.fileid || data.data?.file_id || data.file_id || '');
+    if (!fileId) throw createApiError(data);
+
+    // groupid 是用户企业空间的固定值，从任意已有文档获取即可
+    // 新文档创建后不会立即出现在搜索结果（有索引延迟），所以取第一条已有文档的 groupid
+    let groupId = null;
+    let docUrl = null;
+    try {
+      const search = await this.searchFiles({ keyword: '', count: 3 });
+      const anyFile = (search.files || []).find(f => f.groupid);
+      if (anyFile?.groupid) {
+        groupId = anyFile.groupid;
+        docUrl = `https://365.kdocs.cn/l/doc/${groupId}/${fileId}`;
+      }
+    } catch { /* 搜索失败时降级，不影响主流程 */ }
+
+    return { result: 'ok', fileid: fileId, groupid: groupId, doc_url: docUrl };
   }
 
   // ── 块操作快捷方法 ────────────────────────────────
@@ -125,6 +142,38 @@ class AirpageClient {
     return this.execute(fileId, {
       command: 'http.otl.query',
       param: { name: 'convert', params: { content, format } },
+    });
+  }
+
+  /**
+   * 插入 Markdown 内容（整段写入，比 convert+insert 更简单）
+   * @param {string} fileId
+   * @param {object} opts - { title, content, pos: 'begin'|'end' }
+   *   title 和 content 必填其一
+   */
+  insertMarkdown(fileId, { title, content, pos = 'end' } = {}) {
+    if (!title && !content) throw new AirpageError('title 和 content 必填其一');
+    const params = { pos };
+    if (title) params.title = title;
+    if (content) params.content = content;
+    return this.execute(fileId, {
+      command: 'http.otl.exec',
+      param: { subType: 'insertContent', params },
+    });
+  }
+
+  /**
+   * 获取文档目录结构（标题列表）
+   * @param {string} fileId
+   * @param {string} format - 'json' | 'markdown'
+   */
+  queryOutline(fileId, format = 'markdown') {
+    return this.execute(fileId, {
+      command: 'http.otl.query',
+      param: {
+        name: 'queryContentByStyle',
+        params: { attrs: { nodeType: 'heading' }, format },
+      },
     });
   }
 

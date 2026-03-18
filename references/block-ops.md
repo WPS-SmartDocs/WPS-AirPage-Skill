@@ -1,35 +1,45 @@
 # 块操作速查
 
-完整 API 文档见: `references/api-reference.md`
-块数据结构完整定义见: `references/data-structure.md`
-错误码见: `references/error-codes.md`
+优先使用 CLI。只有 CLI 不能直接表达时，再手写 payload。
 
-## ⚠️ 关键限制（必读）
+完整字段定义见 `references/data-structure.md`，错误码见 `references/error-codes.md`，已验证坑点见 `references/verified-behavior.md`。
 
-| 场景 | 限制 |
+## 关键限制
+
+| 场景 | 约束 |
 |------|------|
-| 查询响应 | `data.result` 是 **base64 编码的 JSON**，必须解码才能读取块数据：`echo "$RESULT" \| base64 -d \| python3 -m json.tool` |
-| 插入 index | **必须 >= 1**（title 固定在 index 0），传 0 或负数返回 `invalid operation` |
-| blockQuote | content 直接包含 inline 节点（text、br），**不能嵌套 paragraph 子块**，否则返回 `invalid content` |
-| 列表段落 | attrs 必须同时含 `contentIndent` 和完整 `listAttrs`（含 `styleType`），缺一返回 `invalid attrs` |
-| highLightBlock | 创建时**不支持 `style` 属性**，只支持 `emoji`，传 style 返回 `invalid attrs` |
-| picture.sourceKey | **必须是 WPS 内部附件 ID**（如 `E3IJKFJGABQGO`），外部 URL API 接受但不渲染 |
-| pictureColumn | 创建时**不支持 `width`/`align`**，只需 content 中放 picture 子块 |
-| rangeMarks | 操作涉及 index（插入/删除）时必须忽略 rangeMarks；update_content 时可包含 rangeMarks 以保留评论 |
+| `file_id` | 必须是数字 ID，不接受短链 |
+| 插入位置 | `insert --index` 必须 `>= 1` |
+| 更新操作 | `block.update` 的 `params` 是数组；CLI 会自动包装 |
+| 评论锚点 | 保留评论时，`update_content` 需要保留 `rangeMarkBegin` / `rangeMarkEnd` |
+| 图片上传 | `picture.attrs.sourceKey` 必须是 WPS 附件 ID，不是外链 URL |
+| 附件上传 | 上传端点必须带 `Origin: https://365.kdocs.cn` |
 
 ## 统一端点
 
-```
+```http
 POST https://365.kdocs.cn/api/v3/office/file/{FILE_ID}/core/execute
-Headers:
-  Cookie: <cookie>
-  x-csrf-rand: <csrf>
-  Content-Type: application/json
+Cookie: <cookie>
+x-csrf-rand: <csrf>
+Content-Type: application/json
 ```
 
-## 操作模板
+## CLI 对应关系
 
-### 查询块 (block.query)
+| 任务 | CLI |
+|------|-----|
+| 查询块 | `node scripts/cli.js query <file_id> [block_id]` |
+| 批量查询 | `node scripts/cli.js batch-query <file_id> <id1> <id2>` |
+| 插入块 | `node scripts/cli.js insert <file_id> --block-id <id> --index <n> --content <json>` |
+| 更新块 | `node scripts/cli.js update <file_id> --body <json>` |
+| 删除块 | `node scripts/cli.js delete <file_id> --body <json>` |
+| Markdown/HTML 转块 | `node scripts/cli.js convert <file_id> --from markdown --content <text>` |
+
+## 查询块
+
+CLI 默认会把可解码的 `detail.result` 处理成 JSON；如果响应里仍然是字符串，再按 base64 尝试手动解码。
+
+推荐 payload：
 
 ```json
 {
@@ -37,18 +47,13 @@ Headers:
   "param": {
     "name": "block.query",
     "params": {
-      "blockId": "doc"
+      "blockIds": ["doc"]
     }
   }
 }
 ```
 
-> 响应中 `data.result` 是 base64 编码，需解码：
-> ```bash
-> echo "<data.result值>" | base64 -d | python3 -m json.tool
-> ```
-
-### 批量查询块
+批量查询：
 
 ```json
 {
@@ -56,13 +61,13 @@ Headers:
   "param": {
     "name": "block.query",
     "params": {
-      "blockIds": ["blockId1", "blockId2"]
+      "blockIds": ["id1", "id2"]
     }
   }
 }
 ```
 
-### 插入块 (block.insert)
+## 插入块
 
 ```json
 {
@@ -76,14 +81,11 @@ Headers:
         {
           "type": "heading",
           "attrs": { "level": 1 },
-          "content": [{"type": "text", "content": "标题"}]
+          "content": [{ "type": "text", "content": "标题" }]
         },
         {
           "type": "paragraph",
-          "content": [
-            {"type": "text", "content": "普通文字"},
-            {"type": "text", "content": "加粗", "attrs": {"bold": true}}
-          ]
+          "content": [{ "type": "text", "content": "正文内容" }]
         }
       ]
     }
@@ -91,113 +93,9 @@ Headers:
 }
 ```
 
-### 插入列表（必须含 contentIndent + listAttrs.styleType）
+## 更新块
 
-```json
-{
-  "command": "http.otl.exec",
-  "param": {
-    "subtype": "block.insert",
-    "params": {
-      "blockId": "doc",
-      "index": 2,
-      "content": [
-        {
-          "type": "paragraph",
-          "attrs": { "contentIndent": 1, "listAttrs": { "type": 1, "styleType": 1, "level": 0 } },
-          "content": [{"type": "text", "content": "无序列表项"}]
-        },
-        {
-          "type": "paragraph",
-          "attrs": { "contentIndent": 1, "listAttrs": { "type": 2, "styleType": 4, "level": 0 } },
-          "content": [{"type": "text", "content": "有序列表项"}]
-        }
-      ]
-    }
-  }
-}
-```
-
-### 插入引用块（content 直接是 inline，不嵌套 paragraph）
-
-```json
-{
-  "command": "http.otl.exec",
-  "param": {
-    "subtype": "block.insert",
-    "params": {
-      "blockId": "doc",
-      "index": 3,
-      "content": [
-        {
-          "type": "blockQuote",
-          "content": [
-            {"type": "text", "content": "引用内容第一行", "attrs": {"italic": true}},
-            {"type": "br"},
-            {"type": "text", "content": "— 作者"}
-          ]
-        }
-      ]
-    }
-  }
-}
-```
-
-### 插入代码块（lang 用数字编号，见 data-structure.md）
-
-```json
-{
-  "command": "http.otl.exec",
-  "param": {
-    "subtype": "block.insert",
-    "params": {
-      "blockId": "doc",
-      "index": 4,
-      "content": [
-        {
-          "type": "codeBlock",
-          "attrs": { "lang": 5 },
-          "content": [{"type": "text", "content": "console.log('hello');"}]
-        }
-      ]
-    }
-  }
-}
-```
-
-### 更新块 (block.update)
-
-```json
-{
-  "command": "http.otl.exec",
-  "param": {
-    "subtype": "block.update",
-    "params": {
-      "operation": "update_content",
-      "blockId": "<target_block_id>",
-      "content": [{"type": "text", "content": "新内容", "attrs": {"bold": true}}]
-    }
-  }
-}
-```
-
-更新属性（不改内容）：
-
-```json
-{
-  "command": "http.otl.exec",
-  "param": {
-    "subtype": "block.update",
-    "params": {
-      "operation": "update_attrs",
-      "blockId": "<target_block_id>",
-      "attrs": { "align": 2 }
-    }
-  }
-}
-```
-
-### 批量更新块
+`params` 必须是数组：
 
 ```json
 {
@@ -205,14 +103,34 @@ Headers:
   "param": {
     "subtype": "block.update",
     "params": [
-      {"operation": "update_content", "blockId": "id1", "content": [...]},
-      {"operation": "update_attrs", "blockId": "id2", "attrs": {"align": 2}}
+      {
+        "operation": "update_content",
+        "blockId": "target_block_id",
+        "content": [{ "type": "text", "content": "更新后的内容" }]
+      }
     ]
   }
 }
 ```
 
-### 删除块 (block.delete)
+常见 `operation`：
+
+| operation | 关键参数 |
+|-----------|----------|
+| `update_content` | `blockId`, `content[]` |
+| `update_attrs` | `blockId`, `attrs{}` |
+| `insert_table_rows` | `blockId`, `content[]`, `start?` |
+| `insert_table_columns` | `blockId`, `content[]`, `start?` |
+| `delete_table_rows` | `blockId`, `start?`, `count` |
+| `delete_table_columns` | `blockId`, `start?`, `count` |
+| `merge_table_cells` | `blockId`, `startRow?`, `startCol?`, `rowSpan`, `colSpan` |
+| `split_table_cell` | `blockId`, `startRow?`, `startCol?` |
+| `replace_anchor` | `blockId`, `anchorId`, `content{type,attrs}` |
+| `replace_feature` | `blockId`, `source`, `target` |
+
+## 删除块
+
+单次删除：
 
 ```json
 {
@@ -222,13 +140,13 @@ Headers:
     "params": {
       "blockId": "doc",
       "startIndex": 1,
-      "endIndex": 3
+      "endIndex": 2
     }
   }
 }
 ```
 
-### 批量删除块
+批量删除：
 
 ```json
 {
@@ -236,14 +154,14 @@ Headers:
   "param": {
     "subtype": "block.delete",
     "params": [
-      {"blockId": "id1"},
-      {"blockId": "id2"}
+      { "blockId": "id1", "startIndex": 1, "endIndex": 2 },
+      { "blockId": "id2", "startIndex": 0, "endIndex": 1 }
     ]
   }
 }
 ```
 
-### Markdown 转块 (convert)
+## Markdown / HTML 转块
 
 ```json
 {
@@ -251,28 +169,36 @@ Headers:
   "param": {
     "name": "convert",
     "params": {
-      "content": "# 标题\n\n- 列表项1\n- 列表项2\n\n```python\nprint('hello')\n```",
-      "from": "markdown"
+      "format": "markdown",
+      "content": "# 标题"
     }
   }
 }
 ```
 
-> 响应的 `data.result` 同样需要 base64 解码。解码后得到 blocks 数组，再用 block.insert 写入。
+返回值中的块数据可直接作为后续 `block.insert` 的 `content`。
 
-## 创建新文档
+## 附件图片
 
+CLI：
+
+```bash
+node scripts/cli.js upload-image <file_id> ./photo.jpg --index 1 --width 800 --height 600
 ```
-POST https://365.kdocs.cn/api/v3/office/new/o/file
-Headers: Cookie + x-csrf-rand
-Body: { "fname": "新文档名称" }
+
+手写 picture 块时使用上传得到的 `attachment_id`：
+
+```json
+{
+  "type": "picture",
+  "attrs": {
+    "sourceKey": "<attachment_id>",
+    "width": 800,
+    "height": 600
+  }
+}
 ```
 
-## assets/ 示例文件说明
+## assets/
 
-`assets/` 目录包含可直接使用的块数据 JSON，块结构与本 API 完全兼容。
-使用时将 content 数组放入 block.insert 的 `params.content` 字段：
-
-- `create-blocks.json` — 常用块类型示例（heading/paragraph/list/codeBlock）
-- `demo-content.json` — 完整富文本演示（含表格、列表、引用、代码、高亮块）
-- `update-blocks.json` — update_content 示例
+`assets/` 里有现成的块数据示例，可直接喂给 `insert --content @path` 或 `update --body @path`。
