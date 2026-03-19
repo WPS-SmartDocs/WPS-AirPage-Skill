@@ -45,7 +45,8 @@
 
 - `new-doc` 成功时服务端只返回 `{"fileid": "<id>"}`,不含 `result:"ok"`，CLI 已兼容处理。
 - 文档 URL 格式为 `https://365.kdocs.cn/office/o/{fileid}`，无需 `groupid`。
-- `new-doc` 响应只有 `{"fileid":"..."}`;  CLI 自动拼装 `doc_url`，命令输出包含完整文档链接。
+- `fname` 仅设置文件名（搜索可见），文档内部标题块（index 0，`type: "title"`）默认为空。
+- CLI 在 `new-doc` 后会自动查询 title 块并用 `update_content` 写入标题；响应路径：`detail.result.blocks[0].blocks`，过滤 `type === "title"` 取 `id`。
 
 ## 关键坑点
 
