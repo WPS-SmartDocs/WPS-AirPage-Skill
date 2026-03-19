@@ -23,6 +23,39 @@ Operate [WPS 365 AirPage](https://365.kdocs.cn) smart documents via a local CLI 
 
 ---
 
+## Usage Examples
+
+Once installed, just describe what you want in natural language — no commands to memorize.
+
+**Create a document and write content**
+> "Create a new AirPage document titled 'Q2 Review' and insert this Markdown: ..."
+
+**Find and edit an existing document**
+> "Find the 'Weekly Report' document and append a paragraph: Completed user auth module this week."
+
+**Inspect document structure**
+> "Show me the block structure of that kdocs document" / "Give me the outline of the document"
+
+**Update specific content**
+> "Change the second heading in the document to 'Implementation Plan'"
+
+**Table operations**
+> "Insert a row after the second row with: Alice, Product, 2026-03"
+
+**Upload an image**
+> "Upload this screenshot to the end of the document"
+
+**Manage comments**
+> "List all comments in the document" / "Add a comment on the first paragraph: needs a data source"
+
+### Trigger Keywords (Claude Code auto-activates on)
+
+Mention any of these in conversation and the skill activates automatically:
+
+`kdocs` · `AirPage` · `智能文档` · `365.kdocs.cn`
+
+---
+
 ## Prerequisites
 
 - **Node.js 18+**
