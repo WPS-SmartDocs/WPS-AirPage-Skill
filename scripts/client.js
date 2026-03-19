@@ -24,7 +24,7 @@ const SHORT_LINK_RE = /365\.kdocs\.cn\/l\/[A-Za-z0-9]+/;
 async function resolveShortLink(url, cookie) {
   const res = await fetch(url, { headers: { Cookie: cookie, 'Accept-Encoding': 'identity' } });
   const html = await res.text();
-  const m = html.match(/"file"\s*:\s*\{[^}]*"id"\s*:\s*"(\d+)"/);
+  const m = html.match(/"file"\s*:\s*\{\s*"id"\s*:\s*"(\d+)"/);
   if (!m) throw new AirpageError(`无法从短链解析 file_id: ${url}`);
   return m[1];
 }
