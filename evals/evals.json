@@ -36,6 +36,43 @@
         "从返回结构中明确识别 heading 块",
         "最终回复包含找到的 block id 或清楚说明未找到"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "凭据已经超过8小时，现在帮我查一下文档「项目周报」的块结构。",
+      "expected_output": "检测到凭据过期，先执行认证刷新流程（优先 MCP 全自动），认证成功后再执行搜索和查询，不得在认证完成前执行任何文档操作。",
+      "files": [],
+      "expectations": [
+        "auth 检查到过期后立即进入刷新流程，不直接跳到查询",
+        "按优先级尝试认证方式（MCP 全自动 → browser → 手动兜底）",
+        "认证成功后再执行 search + query",
+        "不要求用户手动导航浏览器或告知任何状态",
+        "最终回复包含块结构或明确说明未找到"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "帮我新建一个 AirPage 文档，写入三级标题「实验结论」和一段正文，然后用 outline 命令查看目录结构。",
+      "expected_output": "新建文档、写入内容后，如果 outline 返回空，不得认为写入失败或重复写入，改用 query 过滤 type=heading 块验证，并向用户说明 outline 有服务端索引延迟。",
+      "files": [],
+      "expectations": [
+        "outline 返回空时不报错、不重复写入",
+        "改用 query 过滤 type=heading 块验证内容已写入",
+        "向用户说明 outline 有服务端索引延迟，query 结果才是权威",
+        "最终回复正确展示已写入的标题和正文"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "帮我把 AirPage 文档 12345 里的第一个段落内容更新为「新内容文本」，注意这个段落上可能有评论。",
+      "expected_output": "query 块后如果发现 rangeMarkBegin/End 标记，update_content 时必须保留这些标记以维持评论锚点；计算 insert index 时需要跳过 rangeMarks。",
+      "files": [],
+      "expectations": [
+        "query 后识别并记录 rangeMarkBegin/End 标记",
+        "update_content 时把 rangeMarkBegin/End 一并带入 body",
+        "不将 rangeMarks 计入 insert index 计算",
+        "验证后确认评论未被破坏"
+      ]
     }
   ]
 }
