@@ -42,11 +42,6 @@ Once installed, just describe what you want in natural language — no commands 
 **Table operations**
 > "Insert a row after the second row with: Alice, Product, 2026-03"
 
-**Upload an image**
-> "Upload this screenshot to the end of the document"
-
-**Manage comments**
-> "List all comments in the document" / "Add a comment on the first paragraph: needs a data source"
 
 ### Trigger Keywords (Claude Code auto-activates on)
 
