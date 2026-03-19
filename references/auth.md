@@ -2,6 +2,45 @@
 
 优先级：MCP 自动导航登录 > Chrome DevTools MCP（页面已开） > `auth --browser` > 手动录入。
 
+## 多平台 MCP 安装
+
+`chrome-devtools-mcp` 是通用 npm MCP server，支持所有平台：
+
+```bash
+# 一键安装（自动检测并写入所有平台配置）
+node scripts/cli.js auth --install-mcp
+
+# 指定平台
+node scripts/cli.js auth --install-mcp claude-code   # 仅 Claude Code
+node scripts/cli.js auth --install-mcp cursor        # 仅 Cursor
+node scripts/cli.js auth --install-mcp codex         # 仅 Codex CLI
+node scripts/cli.js auth --install-mcp gemini        # 仅 Gemini CLI
+```
+
+各平台配置写入路径：
+
+| 平台 | 配置文件 |
+|------|----------|
+| Claude Code | `claude mcp add` 命令（自动执行） |
+| Cursor | `~/.cursor/mcp.json` |
+| Codex CLI | `~/.codex/mcp.json` |
+| Gemini CLI | `~/.gemini/settings.json` |
+
+> 项目根目录的 `.mcp.json` 是通用格式，部分平台会自动读取。
+
+### MCP 工具名称约定
+
+不同平台的 MCP 工具前缀不同：
+
+| 平台 | 工具前缀示例 |
+|------|-------------|
+| Claude Code | `mcp__chrome-devtools-mcp__*`（安装名决定）|
+| Cursor | `mcp_chrome-devtools-mcp_*` |
+| Codex | 视配置而定，通常同 Cursor |
+| Gemini CLI | 视配置而定 |
+
+在 `references/auth.md` 方式零的步骤中，工具名以 Claude Code 格式（`mcp__chrome-devtools-mcp__`）示例；其他平台替换前缀即可。
+
 ## 凭据文件
 
 ```json

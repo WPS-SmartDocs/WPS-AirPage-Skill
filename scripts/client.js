@@ -88,7 +88,7 @@ class AirpageClient {
     // 设置文档内部标题块（index 0 的 title 块默认为空）
     try {
       const root = await this.queryBlocks(fileId, 'doc');
-      const children = root?.detail?.result?.blocks?.[0]?.blocks ?? [];
+      const children = root?.detail?.result?.blocks?.[0]?.content ?? [];
       const titleBlock = children.find(b => b.type === 'title');
       if (titleBlock?.id) {
         await this.updateBlocks(fileId, [{

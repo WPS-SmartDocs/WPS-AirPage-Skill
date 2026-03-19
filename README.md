@@ -120,12 +120,19 @@ Credentials are stored locally at `~/.claude/secrets/wps365.json` (mode `0600`).
 |--------|------|
 | Silent headless | Session active in Playwright profile — no UI shown |
 | Headed browser | First run or session expired — browser window opens for login |
-| Chrome DevTools MCP | Claude Code only — fully automated, extracts from open browser tab |
+| Chrome DevTools MCP | Any MCP-enabled platform — fully automated zero-click extraction |
 | Manual | `auth --set-cookie "..." --set-csrf "..."` |
 
 ```bash
 node scripts/cli.js auth            # check status
 node scripts/cli.js auth --browser  # silent if logged in, headed if not
+
+# Install Chrome DevTools MCP (enables zero-click auth on any MCP platform)
+node scripts/cli.js auth --install-mcp           # all platforms
+node scripts/cli.js auth --install-mcp claude-code
+node scripts/cli.js auth --install-mcp cursor
+node scripts/cli.js auth --install-mcp codex
+node scripts/cli.js auth --install-mcp gemini
 ```
 
 Credentials auto-expire after 8 hours and prompt for refresh.
@@ -136,13 +143,13 @@ Credentials auto-expire after 8 hours and prompt for refresh.
 
 | Platform | CLI | Auto-auth | MCP auth |
 |----------|-----|-----------|---------|
-| Claude Code | ✅ | ✅ `--browser` | ✅ Chrome DevTools MCP |
-| Cursor | ✅ | ✅ `--browser` | ❌ |
-| Codex CLI | ✅ | ✅ `--browser` | ❌ |
-| Gemini CLI | ✅ | ✅ `--browser` | ❌ |
-| Any Node.js env | ✅ | ✅ `--browser` | ❌ |
+| Claude Code | ✅ | ✅ `--browser` | ✅ built-in via `--install-mcp claude-code` |
+| Cursor | ✅ | ✅ `--browser` | ✅ via `--install-mcp cursor` |
+| Codex CLI | ✅ | ✅ `--browser` | ✅ via `--install-mcp codex` |
+| Gemini CLI | ✅ | ✅ `--browser` | ✅ via `--install-mcp gemini` |
+| Any Node.js env | ✅ | ✅ `--browser` | ➕ if platform supports MCP |
 
-MCP-based auto-auth (zero-click credential extraction) requires Claude Code with Chrome DevTools MCP installed.
+MCP-based auto-auth uses `chrome-devtools-mcp` (npm), a universal MCP server that works with any MCP-enabled agent platform. Run `auth --install-mcp` to configure it once.
 
 ---
 
@@ -173,8 +180,6 @@ wps-airpage/
 ## Security
 
 - Credentials stored at `~/.claude/secrets/wps365.json` (mode `0600`)
-- `wps_sid` is an HttpOnly cookie — extracted from network request headers, never from `document.cookie`
-- CSRF token only available on AirPage editing pages (`window.__WPSENV__.csrf_token`)
 - Playwright profile stored at `~/.claude/secrets/wps-airpage-profile/`
 - All credentials remain local — nothing is sent to third parties
 

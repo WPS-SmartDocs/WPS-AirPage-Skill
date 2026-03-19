@@ -41,6 +41,67 @@ program
   .description('WPS 智能文档 CLI — 通过 Cookie 认证操作 AirPage')
   .version(pkg.version);
 
+// ── MCP 安装（多平台） ────────────────────────────────
+
+const MCP_SERVER_CONFIG = {
+  'chrome-devtools-mcp': {
+    command: 'npx',
+    args: ['-y', 'chrome-devtools-mcp@latest'],
+  },
+};
+
+/** 各平台 MCP 配置文件路径 */
+const MCP_CONFIGS = {
+  'claude-code': null, // 用 `claude mcp add` 命令安装
+  cursor: path.join(require('os').homedir(), '.cursor', 'mcp.json'),
+  codex: path.join(require('os').homedir(), '.codex', 'mcp.json'),
+  gemini: path.join(require('os').homedir(), '.gemini', 'settings.json'),
+};
+
+function mergeMcpJson(filePath, serverKey, serverConfig) {
+  let existing = {};
+  try { existing = JSON.parse(fs.readFileSync(filePath, 'utf-8')); } catch { /* new file */ }
+  const mcpServers = { ...(existing.mcpServers || {}), [serverKey]: serverConfig };
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify({ ...existing, mcpServers }, null, 2) + '\n');
+}
+
+function installMcp(platform = 'all') {
+  const { execSync } = require('child_process');
+  const targets = platform === 'all' ? Object.keys(MCP_CONFIGS) : [platform];
+  const invalid = targets.filter(p => !(p in MCP_CONFIGS));
+  if (invalid.length) {
+    console.error(`未知平台: ${invalid.join(', ')}。可选: ${Object.keys(MCP_CONFIGS).join('|')}|all`);
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(`\n正在为 [${targets.join(', ')}] 安装 Chrome DevTools MCP...\n`);
+
+  for (const p of targets) {
+    if (p === 'claude-code') {
+      console.log('Claude Code: claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest');
+      try {
+        execSync('claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest', { stdio: 'inherit' });
+        console.log('✓ Claude Code MCP 安装完成，请重启会话生效。\n');
+      } catch {
+        console.warn('⚠  claude 命令不可用，请手动运行上方命令。\n');
+      }
+    } else {
+      const cfgPath = MCP_CONFIGS[p];
+      try {
+        mergeMcpJson(cfgPath, 'chrome-devtools-mcp', MCP_SERVER_CONFIG['chrome-devtools-mcp']);
+        console.log(`✓ ${p.padEnd(12)} → ${cfgPath}`);
+      } catch (e) {
+        console.error(`✗ ${p.padEnd(12)} 失败: ${e.message}`);
+      }
+    }
+  }
+
+  console.log('\n安装完成！重启对应编辑器/CLI 使 MCP 生效。');
+  console.log('安装后运行: node scripts/cli.js auth --browser  （或在 AI 中触发鉴权流程）');
+}
+
 // ── auth ──────────────────────────────────────────────
 program
   .command('auth')
@@ -48,22 +109,11 @@ program
   .option('--set-cookie <cookie>', '手动设置 cookie 字符串')
   .option('--set-csrf <csrf>', '手动设置 CSRF token')
   .option('--browser', '启动浏览器自动提取凭据（需 playwright）')
-  .option('--install-mcp', '安装 Chrome DevTools MCP（推荐，浏览器已开文档时全自动提取）')
+  .option('--install-mcp [platform]', '安装 Chrome DevTools MCP（claude-code|cursor|codex|gemini|all，默认 all）')
   .option('--refresh', '提示如何重新提取（需配合 Chrome DevTools MCP）')
   .action((opts) => {
-    if (opts.installMcp) {
-      const { execSync } = require('child_process');
-      console.log('正在安装 Chrome DevTools MCP...');
-      console.log('命令: claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest\n');
-      try {
-        execSync('claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest', { stdio: 'inherit' });
-        console.log('\n✓ 安装完成！请重启 Claude Code 会话使 MCP 生效。');
-        console.log('  之后只要浏览器打开着 AirPage 文档，Claude 可自动提取凭据。');
-      } catch (e) {
-        console.error('安装失败:', e.message);
-        console.log('请手动运行: claude mcp add chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest');
-        process.exitCode = 1;
-      }
+    if (opts.installMcp !== undefined) {
+      installMcp(opts.installMcp === true ? 'all' : opts.installMcp);
       return;
     }
 

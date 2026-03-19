@@ -46,7 +46,7 @@
 - `new-doc` 成功时服务端只返回 `{"fileid": "<id>"}`,不含 `result:"ok"`，CLI 已兼容处理。
 - 文档 URL 格式为 `https://365.kdocs.cn/office/o/{fileid}`，无需 `groupid`。
 - `fname` 仅设置文件名（搜索可见），文档内部标题块（index 0，`type: "title"`）默认为空。
-- CLI 在 `new-doc` 后会自动查询 title 块并用 `update_content` 写入标题；响应路径：`detail.result.blocks[0].blocks`，过滤 `type === "title"` 取 `id`。
+- CLI **不会**自动写入 title 块（cli.js `new-doc` 命令仅调用 `newDoc()`，无后续写入逻辑）。`new-doc` 后必须手动：先 `query <file_id>` 拿到 title 块 ID，再用 `update` 写入内容。title 块的 `content` 字段结构与 paragraph 相同（inline 数组），不能用 `update_content` 的 `replace_text` op（会报 invalid operation）。
 
 ## 关键坑点
 

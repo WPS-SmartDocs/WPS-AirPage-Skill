@@ -139,6 +139,14 @@ Credentials stored at `~/.claude/secrets/wps365.json` (mode `0600`).
 2. If session is active → silently extracts cookie + CSRF, no UI shown
 3. If session expired → opens headed browser window, user logs in once, profile saved for next time
 
+Chrome DevTools MCP (zero-click, any platform that supports MCP):
+```bash
+node scripts/cli.js auth --install-mcp           # install for all platforms
+node scripts/cli.js auth --install-mcp cursor    # Cursor only
+node scripts/cli.js auth --install-mcp codex     # Codex CLI only
+node scripts/cli.js auth --install-mcp gemini    # Gemini CLI only
+```
+
 Manual fallback:
 ```bash
 node scripts/cli.js auth --set-cookie "<cookie>" --set-csrf "<token>"
