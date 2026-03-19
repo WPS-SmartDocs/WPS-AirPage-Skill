@@ -15,6 +15,29 @@ const BASE_URL = 'https://365.kdocs.cn';
 const EXECUTE_PATH = (fileId) => `${BASE_URL}/api/v3/office/file/${fileId}/core/execute`;
 const SEARCH_URL = `${BASE_URL}/3rd/drive/api/v6/search/files`;
 const NEW_DOC_URL = (type) => `${BASE_URL}/api/v3/office/new/${type}/file`;
+const SHORT_LINK_RE = /365\.kdocs\.cn\/l\/[A-Za-z0-9]+/;
+
+/**
+ * 将短链（https://365.kdocs.cn/l/xxx）解析为数字 file_id。
+ * 短链页面 HTML 中 window.__WPSENV__.file_info.file.id 含有数字 id。
+ */
+async function resolveShortLink(url, cookie) {
+  const res = await fetch(url, { headers: { Cookie: cookie, 'Accept-Encoding': 'identity' } });
+  const html = await res.text();
+  const m = html.match(/"file"\s*:\s*\{[^}]*"id"\s*:\s*"(\d+)"/);
+  if (!m) throw new AirpageError(`无法从短链解析 file_id: ${url}`);
+  return m[1];
+}
+
+/**
+ * 如果传入的是短链 URL，自动解析为数字 file_id，否则原样返回。
+ */
+async function normalizeFileId(fileIdOrUrl, cookie) {
+  if (typeof fileIdOrUrl === 'string' && SHORT_LINK_RE.test(fileIdOrUrl)) {
+    return resolveShortLink(fileIdOrUrl, cookie);
+  }
+  return String(fileIdOrUrl);
+}
 
 async function request(url, { method = 'GET', headers = {}, body, params } = {}) {
   const fullUrl = params ? `${url}?${new URLSearchParams(params)}` : url;
@@ -38,6 +61,13 @@ class AirpageClient {
     }
     this.cookie = creds.cookie;
     this.csrf = creds.csrf || '';
+  }
+
+  /**
+   * 将短链或数字 ID 统一解析为数字 file_id
+   */
+  async resolveFileId(fileIdOrUrl) {
+    return normalizeFileId(fileIdOrUrl, this.cookie);
   }
 
   /**

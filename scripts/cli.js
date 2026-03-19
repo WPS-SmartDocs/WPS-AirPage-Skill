@@ -194,6 +194,7 @@ program
   .action(async (fileId, blockId = 'doc', opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const result = await client.queryBlocks(fileId, blockId);
       if (opts.raw) {
         console.log(JSON.stringify(result, null, 2));
@@ -211,6 +212,7 @@ program
   .action(async (fileId, blockIds) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const result = await client.queryBlocksBatch(fileId, blockIds);
       console.log(JSON.stringify(result, null, 2));
     } catch (err) { handleError(err); }
@@ -226,6 +228,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const content = parseJsonInput(opts.content);
       const index = parseInt(opts.index, 10);
       if (index < 1) throw new Error('--index 必须 >= 1（title 固定在 index 0）');
@@ -242,6 +245,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const params = parseJsonInput(opts.body);
       const result = await client.updateBlocks(fileId, params);
       console.log(JSON.stringify(result, null, 2));
@@ -256,6 +260,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const params = parseJsonInput(opts.body);
       const result = await client.deleteBlocks(fileId, params);
       console.log(JSON.stringify(result, null, 2));
@@ -271,6 +276,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       let content = opts.content;
       // 支持 @filepath 读取文本文件
       if (content.startsWith('@')) {
@@ -313,6 +319,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const result = await client.queryComments(fileId, {
         sids: opts.sids, cids: opts.cids,
         pageno: opts.page, size: opts.size, order: opts.order,
@@ -338,6 +345,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const body = { selection_id: opts.sid, content: { text: opts.text }, type: 0 };
       if (opts.replyId) body.reply_id = opts.replyId;
       const result = await client.upsertComment(fileId, body);
@@ -354,6 +362,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const result = await client.upsertComment(fileId, {
         id: opts.id, selection_id: opts.sid, content: { text: opts.text },
       });
@@ -372,6 +381,8 @@ program
     try {
       const { uploadAttachment } = require('./attachment');
       const { loadCredentials } = require('./credentials');
+      const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const resolvedPath = require('path').resolve(imagePath);
       if (!require('fs').existsSync(resolvedPath)) {
         throw new Error(`文件不存在: ${resolvedPath}`);
@@ -387,7 +398,6 @@ program
         return;
       }
 
-      const client = new AirpageClient();
       const pictureAttrs = { sourceKey: attachment_id };
       if (opts.width) pictureAttrs.width = parseInt(opts.width, 10);
       if (opts.height) pictureAttrs.height = parseInt(opts.height, 10);
@@ -419,6 +429,7 @@ program
         content = readFileSync(resolve(content.slice(1)), 'utf-8');
       }
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const result = await client.insertMarkdown(fileId, {
         title: opts.title,
         content,
@@ -436,6 +447,7 @@ program
   .action(async (fileId, opts) => {
     try {
       const client = new AirpageClient();
+      fileId = await client.resolveFileId(fileId);
       const result = await client.queryOutline(fileId, opts.format);
       if (opts.format === 'markdown') {
         const items = result?.detail || [];
