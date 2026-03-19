@@ -15,28 +15,48 @@ const BASE_URL = 'https://365.kdocs.cn';
 const EXECUTE_PATH = (fileId) => `${BASE_URL}/api/v3/office/file/${fileId}/core/execute`;
 const SEARCH_URL = `${BASE_URL}/3rd/drive/api/v6/search/files`;
 const NEW_DOC_URL = (type) => `${BASE_URL}/api/v3/office/new/${type}/file`;
+// 短链：365.kdocs.cn/l/<code>
 const SHORT_LINK_RE = /365\.kdocs\.cn\/l\/[A-Za-z0-9]+/;
+// 长链：365.kdocs.cn/office/o/<numeric_id>
+const LONG_LINK_RE = /365\.kdocs\.cn\/(?:office\/o|l\/\w+.*?[?&]id=)\/?\s*(\d+)/;
+// 纯数字 file_id
+const NUMERIC_RE = /^\d+$/;
 
 /**
- * 将短链（https://365.kdocs.cn/l/xxx）解析为数字 file_id。
- * 短链页面 HTML 中 window.__WPSENV__.file_info.file.id 含有数字 id。
+ * 从 kdocs 文档页 HTML 中提取 file_id。
+ * window.__WPSENV__.file_info.file.id 是第一个 "file":{} 下的 "id" 字段。
  */
 async function resolveShortLink(url, cookie) {
   const res = await fetch(url, { headers: { Cookie: cookie, 'Accept-Encoding': 'identity' } });
   const html = await res.text();
+  // 优先从 __WPSENV__ file 对象第一个字段提取（id 是第一个 key）
   const m = html.match(/"file"\s*:\s*\{\s*"id"\s*:\s*"(\d+)"/);
-  if (!m) throw new AirpageError(`无法从短链解析 file_id: ${url}`);
+  if (!m) throw new AirpageError(`无法从链接解析 file_id: ${url}`);
   return m[1];
 }
 
 /**
- * 如果传入的是短链 URL，自动解析为数字 file_id，否则原样返回。
+ * 将任意形式的文档引用统一解析为数字 file_id：
+ *   - 纯数字         → 原样返回
+ *   - /office/o/123  → 从路径提取
+ *   - /l/xxx 短链    → 请求页面提取
+ *   - 其他字符串     → 抛出明确错误
  */
 async function normalizeFileId(fileIdOrUrl, cookie) {
-  if (typeof fileIdOrUrl === 'string' && SHORT_LINK_RE.test(fileIdOrUrl)) {
-    return resolveShortLink(fileIdOrUrl, cookie);
-  }
-  return String(fileIdOrUrl);
+  const s = String(fileIdOrUrl).trim();
+
+  // 1. 纯数字
+  if (NUMERIC_RE.test(s)) return s;
+
+  // 2. 长链 /office/o/{id}
+  const longM = s.match(/365\.kdocs\.cn\/office\/o\/(\d+)/);
+  if (longM) return longM[1];
+
+  // 3. 短链 /l/<code>
+  if (SHORT_LINK_RE.test(s)) return resolveShortLink(s, cookie);
+
+  // 4. 无法识别
+  throw new AirpageError(`无效的 file_id："${s}"。请传入数字 ID、短链（365.kdocs.cn/l/xxx）或文档链接（365.kdocs.cn/office/o/xxx）。`);
 }
 
 async function request(url, { method = 'GET', headers = {}, body, params } = {}) {

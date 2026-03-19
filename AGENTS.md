@@ -28,7 +28,7 @@ node scripts/cli.js auth
 
 **Step 2 — Resolve `file_id`**
 
-- User provided numeric ID → use it directly.
+- User provided numeric ID, short link (`365.kdocs.cn/l/xxx`), or doc URL (`/office/o/xxx`) → pass directly to CLI, it resolves automatically.
 - User provided name/keyword → `node scripts/cli.js search <keyword>`
 - No target specified → ask: search existing doc or create new one.
 - Never use short link IDs as `file_id`.
@@ -124,7 +124,7 @@ node scripts/cli.js comments <file_id>                       # verify
 2. **`outline` has indexing delay on new docs** — verify content with `query`, filter `type === "heading"`.
 3. **Inline text field is `content`, not `text`** — `{"content": [...]}`, not `{"text": "..."}`.
 4. **`rangeMarkBegin`/`rangeMarkEnd` are not real blocks** — skip them when calculating `--index`; preserve them in `update_content` to keep comment anchors.
-5. **`file_id` must be numeric** — do not use short link IDs like `cqLJVsi247LF`.
+5. **`file_id` accepts three forms** — numeric ID, short link (`365.kdocs.cn/l/xxx`), or doc URL (`/office/o/xxx`). CLI resolves all three automatically.
 6. **`insert --index` must be ≥ 1** — the title block is always at index 0.
 7. **Document URL format**: `https://365.kdocs.cn/office/o/{fileid}` (no groupid needed).
 

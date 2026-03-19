@@ -49,7 +49,7 @@ Use the local CLI to operate WPS 365 AirPage documents. Prefer the CLI over hand
    - **DO NOT 进入 Step 2，直到 `auth` 返回有效状态。**
 
 2. **确认 `file_id`**
-   - 用户给了数字 ID → 直接用。
+   - 用户给了数字 ID、短链（`365.kdocs.cn/l/xxx`）或文档链接（`/office/o/xxx`）→ 直接传给 CLI，自动解析。
    - 给了文档名/关键词 → `search <keyword>`。
    - 没有明确目标 → 主动询问：搜索已有文档 或 新建文档。
    - 搜索/新建**一律用 CLI 完成**，不得要求用户在浏览器手动操作。
@@ -141,7 +141,7 @@ node scripts/cli.js outline <file_id> --format json  # 带 level/attrs 结构
 
 ## Key Constraints
 
-- `file_id` 必须是数字 ID（不能用短链）。
+- `file_id` 接受三种形式：数字 ID、短链（`365.kdocs.cn/l/xxx`）、文档链接（`365.kdocs.cn/office/o/xxx`），CLI 自动解析。
 - `insert --index` 必须 `>= 1`（title 固定在 index 0）。
 - `update --body` 必须是数组，即使只更新一个块。
 - 更新含评论的块时需保留 `rangeMarkBegin` / `rangeMarkEnd`。
