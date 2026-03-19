@@ -1,0 +1,82 @@
+[
+  {
+    "query": "帮我在那个 kdocs 文档里加一段关于 Q1 销售目标的内容，文档名叫「2026年度计划」",
+    "should_trigger": true
+  },
+  {
+    "query": "我有个 AirPage 智能文档需要更新，帮我把第三段的标题改成「执行计划」",
+    "should_trigger": true
+  },
+  {
+    "query": "wps 智能文档里的表格能不能用 api 操作？我想往里面插一行数据",
+    "should_trigger": true
+  },
+  {
+    "query": "帮我在 365.kdocs.cn 上那个文档里加几条评论，selection_id 随便取个名字就行",
+    "should_trigger": true
+  },
+  {
+    "query": "我刚截了一张图，能帮我上传到 airpage 文档里吗，index 放到第 2 个块的位置",
+    "should_trigger": true
+  },
+  {
+    "query": "用 wps-airpage 帮我创建一个新文档，名字叫「项目周报模板」",
+    "should_trigger": true
+  },
+  {
+    "query": "kdocs 里那个文档的块结构怎么查？我想知道第一个 heading 的 id",
+    "should_trigger": true
+  },
+  {
+    "query": "帮我把这段 markdown 转成 airpage 的块格式然后插进去",
+    "should_trigger": true
+  },
+  {
+    "query": "搜索一下我的 wps 云文档，找到名字里有「架构」的那个文件",
+    "should_trigger": true
+  },
+  {
+    "query": "我在 airpage 上写了个 doc，里面有个表格，帮我合并第1行的前两个单元格",
+    "should_trigger": true
+  },
+  {
+    "query": "帮我写一个 Python 脚本读取本地的 Word 文档并提取其中的表格数据",
+    "should_trigger": false
+  },
+  {
+    "query": "我想在 Notion 里创建一个新页面，内容是今天的会议记录",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我把这个 markdown 文件转成 pdf，用 pandoc 就行",
+    "should_trigger": false
+  },
+  {
+    "query": "能不能帮我分析一下这个 Excel 表格里的销售数据，画个折线图",
+    "should_trigger": false
+  },
+  {
+    "query": "我的 wps 客户端打不开，一直闪退，应该怎么修？",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我写一段调用 Google Docs API 往文档里插入段落的代码",
+    "should_trigger": false
+  },
+  {
+    "query": "用 playwright 自动化操作浏览器，模拟登录 wps 然后下载文件",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我看看这个 wps 表格（.xlsx 文件）里第三列的公式有没有问题",
+    "should_trigger": false
+  },
+  {
+    "query": "我想把 obsidian 里的笔记同步到某个云文档服务，有什么方案推荐？",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我把这段文字翻译成英文然后复制到文档里",
+    "should_trigger": false
+  }
+]

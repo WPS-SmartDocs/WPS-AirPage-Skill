@@ -64,7 +64,7 @@
 
    4c. 导航到编辑页
    ```
-   mcp__chrome-devtools-mcp__navigate_page  url="https://365.kdocs.cn/l/doc/<file_id>"
+   mcp__chrome-devtools-mcp__navigate_page  url="https://365.kdocs.cn/office/o/<file_id>"
    ```
 
 5. 轮询等待 CSRF token 出现（每 2 秒一次，最多 30 次 / 1 分钟）

@@ -91,7 +91,7 @@ node scripts/cli.js query <file_id>    # 验证
 
 ```bash
 node scripts/cli.js new-doc --name "文档名"
-# 输出包含 file_id 和 doc_url（格式：https://365.kdocs.cn/l/doc/{groupid}/{fileid}）
+# 输出包含 file_id 和 doc_url（格式：https://365.kdocs.cn/office/o/{fileid}）
 node scripts/cli.js insert-markdown <file_id> --content @content.md
 ```
 
@@ -128,7 +128,7 @@ node scripts/cli.js outline <file_id> --format json  # 带 level/attrs 结构
 - `comment-update` 必须同时传 `comment_id` + `selection_id`。
 - `insert-markdown --pos` 只支持 `begin` / `end`。
 - `outline` 对新建文档有索引延迟；验证内容改用 `query` 过滤 heading 块。
-- 文档 URL 格式：`https://365.kdocs.cn/l/doc/{groupid}/{fileid}`（`new-doc` 会自动返回）。
+- 文档 URL 格式：`https://365.kdocs.cn/office/o/{fileid}`（`new-doc` 会自动返回）。
 
 ## Security
 

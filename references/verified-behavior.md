@@ -44,10 +44,8 @@
 ## new-doc 响应与 URL 坑点
 
 - `new-doc` 成功时服务端只返回 `{"fileid": "<id>"}`,不含 `result:"ok"`，CLI 已兼容处理。
-- 文档 URL 格式为 `https://365.kdocs.cn/l/doc/{groupid}/{fileid}`，不是 `/l/doc/{fileid}`。
-- `new-doc` 响应不含 `groupid`；`groupid` 是用户企业空间固定值，从任意已有文档的搜索结果获取即可复用。
-- 新文档不会立即出现在搜索索引中（有延迟），所以补全 `groupid` 时取已有文档而非搜索新文档。
-- CLI 已自动补全 `groupid` 和 `doc_url`，`new-doc` 命令输出包含完整文档链接。
+- 文档 URL 格式为 `https://365.kdocs.cn/office/o/{fileid}`，无需 `groupid`。
+- `new-doc` 响应只有 `{"fileid":"..."}`;  CLI 自动拼装 `doc_url`，命令输出包含完整文档链接。
 
 ## 关键坑点
 

@@ -135,7 +135,7 @@ async function main() {
   // ── 步骤 4：导航到编辑页 ────────────────────────────────
   if (fileId) {
     console.log(`找到文档 ID: ${fileId}，正在导航到编辑页...`);
-    await page.goto(`https://365.kdocs.cn/l/doc/${fileId}`, { timeout: 30000 }).catch(() => {});
+    await page.goto(`https://365.kdocs.cn/office/o/${fileId}`, { timeout: 30000 }).catch(() => {});
   } else {
     console.log('未找到文档，尝试从当前页面提取 CSRF...');
   }

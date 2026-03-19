@@ -1,0 +1,41 @@
+{
+  "skill_name": "wps-airpage",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我在名为「2026年度计划」的 AirPage 文档里插入一段关于 Q1 销售目标的内容。先定位文档，再写入，再确认写入成功。",
+      "expected_output": "先检查或刷新凭据，再通过 search 定位数字 file_id，执行插入或转换+插入，最后 query 回读验证并汇报 file_id/受影响块。",
+      "files": [],
+      "expectations": [
+        "如果用户没有提供数字 file_id，先搜索文档并确认目标文档",
+        "写操作前检查凭据状态，缺失或过期时先刷新",
+        "执行写入后用 query 或 batch-query 回读验证",
+        "最终回复包含 file_id 或受影响 block_id"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "在那个 AirPage 文档里加一条评论，selection_id 你自己起，内容是「这段需要补充数据来源」，然后确认评论已经创建成功。",
+      "expected_output": "先确认目标文档和凭据，使用 comment-add 创建评论，再调用 comments 验证评论存在，并返回 selection_id 或 comment_id。",
+      "files": [],
+      "expectations": [
+        "评论操作前确认或定位 file_id",
+        "使用 comment-add 而不是手写不完整请求",
+        "创建后调用 comments 验证评论结果",
+        "回复中包含 selection_id、comment_id 或等价的确认信息"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "帮我查一下这个 kdocs 智能文档的块结构，找到第一个 heading 的 block id；如果还不知道 file_id，就先搜索文档。",
+      "expected_output": "先确认凭据与 file_id，再 query 文档结构，定位第一个 heading 的 block id，并清楚说明查找结果。",
+      "files": [],
+      "expectations": [
+        "未知 file_id 时先使用 search",
+        "使用 query 或 batch-query 获取块结构",
+        "从返回结构中明确识别 heading 块",
+        "最终回复包含找到的 block id 或清楚说明未找到"
+      ]
+    }
+  ]
+}

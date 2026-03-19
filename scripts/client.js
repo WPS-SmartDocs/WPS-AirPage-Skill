@@ -70,7 +70,7 @@ class AirpageClient {
 
   /**
    * 创建新文档（type: o = AirPage）
-   * 返回值包含 fileid、groupid（通过 search 补全）、doc_url（完整编辑页链接）
+   * 返回值包含 fileid、doc_url（完整编辑页链接）
    */
   async newDoc(name, type = 'o') {
     if (!this.csrf) throw new AirpageError('缺少 CSRF token，请运行: wps-airpage auth');
@@ -83,20 +83,8 @@ class AirpageClient {
     const fileId = String(data.fileid || data.data?.fileid || data.data?.file_id || data.file_id || '');
     if (!fileId) throw createApiError(data);
 
-    // groupid 是用户企业空间的固定值，从任意已有文档获取即可
-    // 新文档创建后不会立即出现在搜索结果（有索引延迟），所以取第一条已有文档的 groupid
-    let groupId = null;
-    let docUrl = null;
-    try {
-      const search = await this.searchFiles({ keyword: '', count: 3 });
-      const anyFile = (search.files || []).find(f => f.groupid);
-      if (anyFile?.groupid) {
-        groupId = anyFile.groupid;
-        docUrl = `https://365.kdocs.cn/l/doc/${groupId}/${fileId}`;
-      }
-    } catch { /* 搜索失败时降级，不影响主流程 */ }
-
-    return { result: 'ok', fileid: fileId, groupid: groupId, doc_url: docUrl };
+    const docUrl = `https://365.kdocs.cn/office/o/${fileId}`;
+    return { result: 'ok', fileid: fileId, doc_url: docUrl };
   }
 
   // ── 块操作快捷方法 ────────────────────────────────
