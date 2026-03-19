@@ -21,6 +21,19 @@
 - 必须从 `365.kdocs.cn` 的网络请求头读取完整 `cookie`。
 - `csrf` 只能从 AirPage 编辑页拿；如果页面不是编辑态，`window.__WPSENV__?.csrf_token` 可能为空。
 
+## auth --browser 静默模式（推荐日常使用）
+
+`auth --browser` 使用持久化 Playwright profile（`~/.claude/secrets/wps-airpage-profile/`）：
+
+- **已登录（session 未过期）**：无头启动，静默提取 cookie + CSRF，用户完全无感知。
+- **未登录 / session 过期**：弹出有头浏览器，用户完成登录后自动提取，登录态保存到 profile 供下次静默使用。
+
+```bash
+node scripts/cli.js auth --browser   # 已登录时静默，未登录时弹浏览器
+```
+
+---
+
 ## 方式零：MCP 全自动登录（凭据缺失/过期时首选）
 
 适用场景：凭据不存在或已过期，Chrome DevTools MCP 可用。**全程自动，用户只需完成账号登录，无需手动告知 Claude 任何状态。**
