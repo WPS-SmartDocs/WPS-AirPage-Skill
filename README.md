@@ -1,5 +1,7 @@
 # WPS AirPage CLI Skill
 
+**English** | [中文](./README.zh.md)
+
 > Automate WPS 365 / AirPage / 智能文档 (kdocs) documents from any AI coding agent.
 
 Operate [WPS 365 AirPage](https://365.kdocs.cn) smart documents via a local CLI — create docs, insert Markdown, edit blocks, manage tables, upload images, and handle comments. Works with Claude Code, Cursor, Codex, Gemini CLI, and any agent that can run Node.js.
